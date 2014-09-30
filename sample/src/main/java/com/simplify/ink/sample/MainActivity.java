@@ -18,7 +18,6 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
 
         final InkView ink = (InkView) findViewById(R.id.ink);
-//        ink.setSmoothingRatio(0.75f);
 
         findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener()
         {
