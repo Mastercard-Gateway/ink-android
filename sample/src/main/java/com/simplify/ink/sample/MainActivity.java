@@ -20,7 +20,7 @@ public class MainActivity extends Activity
         final InkView ink = (InkView) findViewById(R.id.ink);
 //        ink.setSmoothingRatio(0.75f);
 
-        findViewById(R.id.clear).setOnClickListener(new View.OnClickListener()
+        findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View v)
@@ -29,7 +29,7 @@ public class MainActivity extends Activity
             }
         });
 
-        ((CheckBox) findViewById(R.id.debug)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+        ((CheckBox) findViewById(R.id.check_debug)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
         {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)

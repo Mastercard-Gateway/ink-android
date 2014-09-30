@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">Ink</string>
+    <string name="app_name">Simplify - Ink</string>
+    <string name="clear">Clear</string>
+    <string name="debug_mode">Debug Mode</string>
 </resources>

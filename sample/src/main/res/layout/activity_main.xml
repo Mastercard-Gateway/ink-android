@@ -9,17 +9,17 @@
         android:layout_height="match_parent"/>
 
     <Button
-        android:id="@+id/clear"
+        android:id="@+id/button_clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:text="Clear"/>
+        android:layout_alignParentEnd="true"
+        android:text="@string/clear"/>
 
     <CheckBox
-        android:id="@+id/debug"
+        android:id="@+id/check_debug"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="Debug Mode"/>
+        android:text="@string/debug_mode"/>
 
 </RelativeLayout>
