@@ -23,6 +23,10 @@ public class InkView extends View
     public static final float DEFAULT_MIN_STROKE_WIDTH = 1.5f;
     public static final float DEFAULT_SMOOTHING_RATIO = 0.75f;
 
+    // flags
+    public static final byte FLAG_INTERPOLATION = 1;
+    public static final byte FLAG_RESPONSIVE_WEIGHT = 1 << 1;
+
     // constants
     private static final float THRESHOLD_VELOCITY = 6f;         // in/s
     private static final float THRESHOLD_ACCELERATION = 10f;    // in/s^2
@@ -30,6 +34,7 @@ public class InkView extends View
     private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
 
     // settings
+    private byte mFlags = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WEIGHT;
     private Mode mMode = Mode.NORMAL;
     private float mMaxStrokeWidth;
     private float mMinStrokeWidth;
@@ -175,6 +180,31 @@ public class InkView extends View
     //--------------------------------------
     // Public Methods
     //--------------------------------------
+
+    public void setFlags(byte flags)
+    {
+        mFlags = flags;
+    }
+
+    public void addFlags(byte flags)
+    {
+        mFlags |= flags;
+    }
+
+    public void removeFlags(byte flags)
+    {
+        mFlags &= ~flags;
+    }
+
+    public boolean hasFlags(byte flags)
+    {
+        return (mFlags & flags) > 0;
+    }
+
+    public void clearFlags()
+    {
+        mFlags = 0;
+    }
 
     public Mode getMode()
     {
