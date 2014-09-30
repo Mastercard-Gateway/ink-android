@@ -44,7 +44,7 @@ public class InkView extends View
     private Bitmap mBitmap;
     private Canvas mCanvas;
     private Paint mPaint;
-    private ArrayList<SignatureListener> mListeners = new ArrayList<SignatureListener>();
+    private ArrayList<InkListener> mListeners = new ArrayList<InkListener>();
 
     // debug
     private Bitmap mDebugBitmap;
@@ -127,8 +127,8 @@ public class InkView extends View
             addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
 
             // notify listeners of sign
-            for (SignatureListener listener : mListeners) {
-                listener.onSignatureWrite();
+            for (InkListener listener : mListeners) {
+                listener.onInkDraw();
             }
         }
 
@@ -188,11 +188,11 @@ public class InkView extends View
     }
 
     /**
-     * Sets a signature listener on the view
+     * Sets a ink listener on the view
      *
      * @param listener The listener
      */
-    public void addSignatureListener(SignatureListener listener)
+    public void addInkListener(InkListener listener)
     {
         if (!mListeners.contains(listener)) {
             mListeners.add(listener);
@@ -200,9 +200,9 @@ public class InkView extends View
     }
 
     /**
-     * Removes the registered signature listener from the view
+     * Removes the registered ink listener from the view
      */
-    public void removeSignatureListener(SignatureListener listener)
+    public void removeInkListener(InkListener listener)
     {
         mListeners.remove(listener);
     }
@@ -248,7 +248,7 @@ public class InkView extends View
     }
 
     /**
-     * Clears the current signature
+     * Clears the view
      */
     public void clear()
     {
@@ -273,15 +273,15 @@ public class InkView extends View
         }
 
         // notify listeners
-        for (SignatureListener listener : mListeners) {
-            listener.onSignatureClear();
+        for (InkListener listener : mListeners) {
+            listener.onInkClear();
         }
 
         invalidate();
     }
 
     /**
-     * Returns the bitmap of the signature with a transparent background
+     * Returns the bitmap of the drawing with a transparent background
      * @return The bitmap
      */
     public Bitmap getBitmap()
@@ -290,7 +290,7 @@ public class InkView extends View
     }
 
     /**
-     * Returns the bitmap of the signature with the specified background color
+     * Returns the bitmap of the drawing with the specified background color
      * @param backgroundColor The background color for the bitmap
      * @return The bitmap
      */
@@ -305,7 +305,7 @@ public class InkView extends View
             bitmapCanvas.drawColor(backgroundColor);
         }
 
-        // draw signature bitmap
+        // draw bitmap
         bitmapCanvas.drawBitmap(mBitmap, 0, 0, null);
 
         return bitmap;
@@ -484,20 +484,20 @@ public class InkView extends View
     //--------------------------------------
 
     /**
-     * Listener for the signature view to notify on actions
+     * Listener for the ink view to notify on actions
      */
-    public interface SignatureListener
+    public interface InkListener
     {
         /**
-         * Callback method when the signature view has been cleared
+         * Callback method when the ink view has been cleared
          */
-        public void onSignatureClear();
+        public void onInkClear();
 
         /**
-         * Callback method when the signature view receives a touch event
+         * Callback method when the ink view receives a touch event
          * (Will be fired multiple times during a signing)
          */
-        public void onSignatureWrite();
+        public void onInkDraw();
     }
 
 
