@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 20
-    buildToolsVersion '19.1.0'
+    buildToolsVersion '20'
 
     defaultConfig {
-        applicationId "com.simplify.android.ink.sample"
+        applicationId "com.simplify.ink.sample"
         minSdkVersion 17
         targetSdkVersion 20
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     buildTypes {
         release {
