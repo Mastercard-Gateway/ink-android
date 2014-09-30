@@ -21,4 +21,4 @@ android {
     }
 }
 
-apply from: 'release-aar.gradle'
+apply from: '../release-aar.gradle'
