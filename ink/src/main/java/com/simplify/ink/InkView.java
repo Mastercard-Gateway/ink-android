@@ -24,9 +24,9 @@ public class InkView extends View
     public static final float DEFAULT_SMOOTHING_RATIO = 0.75f;
 
     // constants
-    private static final float THRESHOLD_VELOCITY = 6f;         // in/s
-    private static final float THRESHOLD_ACCELERATION = 10f;    // in/s^2
-    private static final float FILTER_RATIO_MIN = 0.2f;
+    private static final float THRESHOLD_VELOCITY = 7f;         // in/s
+    private static final float THRESHOLD_ACCELERATION = 3f;    // in/s^2
+    private static final float FILTER_RATIO_MIN = 0.22f;
     private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
 
     // settings

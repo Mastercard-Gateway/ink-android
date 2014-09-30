@@ -1,11 +1,6 @@
 apply plugin: 'com.android.library'
 apply plugin: 'maven'
 
-ext {
-    PUBLISH_GROUP_ID = 'com.simplify.ink'
-    PUBLISH_ARTIFACT_ID = 'ink'
-    PUBLISH_VERSION = '1.0.0'
-}
 
 android {
     compileSdkVersion 20
