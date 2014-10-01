@@ -16,7 +16,10 @@ import java.util.ArrayList;
 
 public class InkView extends View
 {
-    public enum Mode { NORMAL, DEBUG }
+    public enum Mode
+    {
+        NORMAL, DEBUG
+    }
 
     // defaults
     public static final float DEFAULT_MAX_STROKE_WIDTH = 5f;
@@ -312,6 +315,7 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with a transparent background
+     *
      * @return The bitmap
      */
     public Bitmap getBitmap()
@@ -321,6 +325,7 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with the specified background color
+     *
      * @param backgroundColor The background color for the bitmap
      * @return The bitmap
      */
@@ -415,7 +420,11 @@ public class InkView extends View
 
     private float computeStrokeWidth(float velocity)
     {
-        return mMaxStrokeWidth - (mMaxStrokeWidth - mMinStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
+        if (hasFlags(FLAG_RESPONSIVE_WEIGHT)) {
+            return mMaxStrokeWidth - (mMaxStrokeWidth - mMinStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
+        }
+
+        return mMaxStrokeWidth;
     }
 
     private void draw(InkPoint p)
@@ -495,14 +504,17 @@ public class InkView extends View
 
         // draw debug layer
         if (mMode == Mode.DEBUG) {
+            float pointRadius = mMaxStrokeWidth / 1.5f;
+            float controlRadius = mMaxStrokeWidth / 3f;
+
             mDebugCanvas.drawLine(p1.c1x, p1.c1y, p1.c2x, p1.c2y, mDebugLinePaint);
-            mDebugCanvas.drawCircle(p1.c1x, p1.c1y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p1.c2x, p1.c2y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p1.x, p1.y, mMaxStrokeWidth / 2f, mDebugPointPaint);
+            mDebugCanvas.drawCircle(p1.c1x, p1.c1y, controlRadius, mDebugControlPaint);
+            mDebugCanvas.drawCircle(p1.c2x, p1.c2y, controlRadius, mDebugControlPaint);
+            mDebugCanvas.drawCircle(p1.x, p1.y, pointRadius, mDebugPointPaint);
             mDebugCanvas.drawLine(p2.c1x, p2.c1y, p2.c2x, p2.c2y, mDebugLinePaint);
-            mDebugCanvas.drawCircle(p2.c1x, p2.c1y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p2.c2x, p2.c2y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p2.x, p2.y, mMaxStrokeWidth / 2f, mDebugPointPaint);
+            mDebugCanvas.drawCircle(p2.c1x, p2.c1y, controlRadius, mDebugControlPaint);
+            mDebugCanvas.drawCircle(p2.c2x, p2.c2y, controlRadius, mDebugControlPaint);
+            mDebugCanvas.drawCircle(p2.x, p2.y, pointRadius, mDebugPointPaint);
         }
 
         invalidate();
@@ -540,7 +552,9 @@ public class InkView extends View
         public float x, y, c1x, c1y, c2x, c2y, velocity;
         public long time;
 
-        public InkPoint() {}
+        public InkPoint()
+        {
+        }
 
         public InkPoint(float x, float y, long time)
         {

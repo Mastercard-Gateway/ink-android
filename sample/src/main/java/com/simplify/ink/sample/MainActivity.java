@@ -18,6 +18,7 @@ public class MainActivity extends Activity
         setContentView(R.layout.activity_main);
 
         final InkView ink = (InkView) findViewById(R.id.ink);
+//        ink.removeFlags(InkView.FLAG_RESPONSIVE_WEIGHT);
 
         findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener()
         {
