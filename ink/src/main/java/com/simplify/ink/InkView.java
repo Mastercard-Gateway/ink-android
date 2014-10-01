@@ -27,8 +27,16 @@ public class InkView extends View
     public static final float DEFAULT_SMOOTHING_RATIO = 0.75f;
 
     // flags
+    /**
+     * When this flag is added, paths will be drawn with as cubic-bezier curves
+     */
     public static final byte FLAG_INTERPOLATION = 1;
-    public static final byte FLAG_RESPONSIVE_WEIGHT = 1 << 1;
+
+    /**
+     * When present, the width of the paths will be responsive to the velocity of the stroke<br/>
+     * When missing, the width of the path will be the the max stroke width
+     */
+    public static final byte FLAG_RESPONSIVE_WIDTH = 1 << 1;
 
     // constants
     private static final float THRESHOLD_VELOCITY = 7f;         // in/s
@@ -37,7 +45,7 @@ public class InkView extends View
     private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
 
     // settings
-    private byte mFlags = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WEIGHT;
+    private byte mFlags = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
     private Mode mMode = Mode.NORMAL;
     private float mMaxStrokeWidth;
     private float mMinStrokeWidth;
@@ -275,6 +283,11 @@ public class InkView extends View
         return mSmoothingRatio;
     }
 
+    /**
+     * Sets the smoothing ratio for calculating control points<br/>
+     * When the FLAG_INTERPOLATING is set
+     * @param ratio
+     */
     public void setSmoothingRatio(float ratio)
     {
         mSmoothingRatio = Math.max(Math.min(ratio, 1f), 0f);
@@ -420,7 +433,8 @@ public class InkView extends View
 
     private float computeStrokeWidth(float velocity)
     {
-        if (hasFlags(FLAG_RESPONSIVE_WEIGHT)) {
+        // compute responsive width
+        if (hasFlags(FLAG_RESPONSIVE_WIDTH)) {
             return mMaxStrokeWidth - (mMaxStrokeWidth - mMinStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
         }
 
@@ -453,67 +467,82 @@ public class InkView extends View
         float endWidth = filterRatio * desiredWidth + (1f - filterRatio) * startWidth;
         float deltaWidth = endWidth - startWidth;
 
-        // compute # of steps to interpolate in the bezier curve
-        int steps = (int) (Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) / 5);
+        // interpolate bezier curve
+        if (hasFlags(FLAG_INTERPOLATION)) {
 
-        // computational setup for differentials used to interpolate the bezier curve
-        float u = 1f / (steps + 1);
-        float uu = u * u;
-        float uuu = u * u * u;
+            // compute # of steps to interpolate in the bezier curve
+            int steps = (int) (Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) / 5);
 
-        float pre1 = 3f * u;
-        float pre2 = 3f * uu;
-        float pre3 = 6f * uu;
-        float pre4 = 6f * uuu;
+            // computational setup for differentials used to interpolate the bezier curve
+            float u = 1f / (steps + 1);
+            float uu = u * u;
+            float uuu = u * u * u;
 
-        float tmp1x = p1.x - p1.c2x * 2f + p2.c1x;
-        float tmp1y = p1.y - p1.c2y * 2f + p2.c1y;
-        float tmp2x = (p1.c2x - p2.c1x) * 3f - p1.x + p2.x;
-        float tmp2y = (p1.c2y - p2.c1y) * 3f - p1.y + p2.y;
+            float pre1 = 3f * u;
+            float pre2 = 3f * uu;
+            float pre3 = 6f * uu;
+            float pre4 = 6f * uuu;
 
-        float dx = (p1.c2x - p1.x) * pre1 + tmp1x * pre2 + tmp2x * uuu;
-        float dy = (p1.c2y - p1.y) * pre1 + tmp1y * pre2 + tmp2y * uuu;
-        float ddx = tmp1x * pre3 + tmp2x * pre4;
-        float ddy = tmp1y * pre3 + tmp2y * pre4;
-        float dddx = tmp2x * pre4;
-        float dddy = tmp2y * pre4;
+            float tmp1x = p1.x - p1.c2x * 2f + p2.c1x;
+            float tmp1y = p1.y - p1.c2y * 2f + p2.c1y;
+            float tmp2x = (p1.c2x - p2.c1x) * 3f - p1.x + p2.x;
+            float tmp2y = (p1.c2y - p2.c1y) * 3f - p1.y + p2.y;
 
-        float x1 = p1.x;
-        float y1 = p1.y;
-        float x2, y2;
+            float dx = (p1.c2x - p1.x) * pre1 + tmp1x * pre2 + tmp2x * uuu;
+            float dy = (p1.c2y - p1.y) * pre1 + tmp1y * pre2 + tmp2y * uuu;
+            float ddx = tmp1x * pre3 + tmp2x * pre4;
+            float ddy = tmp1y * pre3 + tmp2y * pre4;
+            float dddx = tmp2x * pre4;
+            float dddy = tmp2y * pre4;
 
-        // iterate over each step and draw the curve
-        int i = 0;
-        while (i++ < steps) {
-            x2 = x1 + dx;
-            y2 = y1 + dy;
+            float x1 = p1.x;
+            float y1 = p1.y;
+            float x2, y2;
 
-            mPaint.setStrokeWidth(startWidth + deltaWidth * i / steps);
-            mCanvas.drawLine(x1, y1, x2, y2, mPaint);
+            // iterate over each step and draw the curve
+            int i = 0;
+            while (i++ < steps) {
+                x2 = x1 + dx;
+                y2 = y1 + dy;
 
-            x1 = x2;
-            y1 = y2;
-            dx += ddx;
-            dy += ddy;
-            ddx += dddx;
-            ddy += dddy;
+                mPaint.setStrokeWidth(startWidth + deltaWidth * i / steps);
+                mCanvas.drawLine(x1, y1, x2, y2, mPaint);
+
+                x1 = x2;
+                y1 = y2;
+                dx += ddx;
+                dy += ddy;
+                ddx += dddx;
+                ddy += dddy;
+            }
+
+            mPaint.setStrokeWidth(endWidth);
+            mCanvas.drawLine(x1, y1, p2.x, p2.y, mPaint);
         }
-
-        mPaint.setStrokeWidth(endWidth);
-        mCanvas.drawLine(x1, y1, p2.x, p2.y, mPaint);
+        // no interpolation, draw line between points
+        else {
+            mCanvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
+            mPaint.setStrokeWidth(endWidth);
+        }
 
         // draw debug layer
         if (mMode == Mode.DEBUG) {
-            float pointRadius = mMaxStrokeWidth / 1.5f;
-            float controlRadius = mMaxStrokeWidth / 3f;
 
-            mDebugCanvas.drawLine(p1.c1x, p1.c1y, p1.c2x, p1.c2y, mDebugLinePaint);
-            mDebugCanvas.drawCircle(p1.c1x, p1.c1y, controlRadius, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p1.c2x, p1.c2y, controlRadius, mDebugControlPaint);
+            // draw control points if interpolating
+            if (hasFlags(FLAG_INTERPOLATION)) {
+                float controlRadius = mMaxStrokeWidth / 3f;
+
+                mDebugCanvas.drawLine(p1.c1x, p1.c1y, p1.c2x, p1.c2y, mDebugLinePaint);
+                mDebugCanvas.drawLine(p2.c1x, p2.c1y, p2.c2x, p2.c2y, mDebugLinePaint);
+                mDebugCanvas.drawCircle(p1.c1x, p1.c1y, controlRadius, mDebugControlPaint);
+                mDebugCanvas.drawCircle(p1.c2x, p1.c2y, controlRadius, mDebugControlPaint);
+                mDebugCanvas.drawCircle(p2.c1x, p2.c1y, controlRadius, mDebugControlPaint);
+                mDebugCanvas.drawCircle(p2.c2x, p2.c2y, controlRadius, mDebugControlPaint);
+            }
+
+            float pointRadius = mMaxStrokeWidth / 1.5f;
+
             mDebugCanvas.drawCircle(p1.x, p1.y, pointRadius, mDebugPointPaint);
-            mDebugCanvas.drawLine(p2.c1x, p2.c1y, p2.c2x, p2.c2y, mDebugLinePaint);
-            mDebugCanvas.drawCircle(p2.c1x, p2.c1y, controlRadius, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p2.c2x, p2.c2y, controlRadius, mDebugControlPaint);
             mDebugCanvas.drawCircle(p2.x, p2.y, pointRadius, mDebugPointPaint);
         }
 
