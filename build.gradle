@@ -1,5 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
+ext {
+    PUBLISH_GROUP_ID = 'com.simplify'
+    PUBLISH_ARTIFACT_ID = 'ink'
+    PUBLISH_VERSION = '0.1'
+}
+
 buildscript {
     repositories {
         jcenter()

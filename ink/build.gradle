@@ -1,15 +1,17 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+
 
 android {
     compileSdkVersion 20
     buildToolsVersion '20'
 
     defaultConfig {
-        applicationId "com.simplify.ink"
+        applicationId 'com.simplify.ink'
         minSdkVersion 14
         targetSdkVersion 20
         versionCode 1
-        versionName "1.0.0"
+        versionName project.PUBLISH_VERSION
     }
     buildTypes {
         release {
@@ -17,7 +19,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    task jar(type: Jar) {
-        from android.sourceSets.main.java
-    }
 }
+
+apply from: '../release-aar.gradle'
