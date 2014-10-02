@@ -15,7 +15,7 @@ Download
 
 You can download the latest version of the the binary here:
 
-    http://dl.bintray.com/simplify/Android/com/simplify/ink/0.1/ink-0.2.aar
+    http://dl.bintray.com/simplify/Android/com/simplify/ink/0.2/ink-0.2.aar
 
 or via Maven:
 
