@@ -1,5 +1,8 @@
 <resources>
-    <string name="app_name">Simplify - Ink Sample</string>
+    <string name="app_name">Simplify - Ink</string>
     <string name="clear">Clear</string>
+    <string name="interpolation">Interpolation</string>
+    <string name="responsive_weight">Responsive Weight</string>
     <string name="debug_mode">Debug Mode</string>
+    <string name="please_sign_above">Please Sign Above</string>
 </resources>

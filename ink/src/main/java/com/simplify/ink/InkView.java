@@ -1,7 +1,7 @@
 package com.simplify.ink;
 
-
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -16,20 +16,60 @@ import java.util.ArrayList;
 
 public class InkView extends View
 {
-    public enum Mode { NORMAL, DEBUG }
+    /**
+     * The rendering mode for the view
+     */
+    public enum Mode
+    {
+        /**
+         * Renders the paths on the drawing layer
+         */
+        NORMAL,
 
-    // defaults
+        /**
+         * Renders the data points and their corresponding control points on top of the drawing layer
+         */
+        DEBUG
+    }
+
+    /**
+     * The default maximum stroke width (dp)<br/>
+     * Will be used as the standard stroke width if FLAG_RESPONSIVE_WIDTH is removed
+     */
     public static final float DEFAULT_MAX_STROKE_WIDTH = 5f;
+
+    /**
+     * The default minimum stroke width (dp)
+     */
     public static final float DEFAULT_MIN_STROKE_WIDTH = 1.5f;
+
+    /**
+     * The default smoothing ratio for calculating the control points for the bezier curves<br/>
+     * Will be ignored if FLAG_INTERPOLATION is removed
+     */
     public static final float DEFAULT_SMOOTHING_RATIO = 0.75f;
+
+    /**
+     * When this flag is added, paths will be drawn as cubic-bezier curves
+     */
+    public static final int FLAG_INTERPOLATION = 1;
+
+    /**
+     * When present, the width of the paths will be responsive to the velocity of the stroke<br/>
+     * When missing, the width of the path will be the the max stroke width
+     */
+    public static final int FLAG_RESPONSIVE_WIDTH = 1 << 1;
+
 
     // constants
     private static final float THRESHOLD_VELOCITY = 7f;         // in/s
     private static final float THRESHOLD_ACCELERATION = 3f;    // in/s^2
     private static final float FILTER_RATIO_MIN = 0.22f;
     private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
+    private static final int DEFAULT_FLAGS = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
 
     // settings
+    private int mFlags;
     private Mode mMode = Mode.NORMAL;
     private float mMaxStrokeWidth;
     private float mMinStrokeWidth;
@@ -56,24 +96,37 @@ public class InkView extends View
 
     public InkView(Context context)
     {
+        this(context, DEFAULT_FLAGS);
+    }
+
+    public InkView(Context context, int flags)
+    {
         super(context);
-        init();
+
+        init(flags);
     }
 
     public InkView(Context context, AttributeSet attrs)
     {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public InkView(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-        init();
+
+        // get flags from attributes
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.InkView, defStyleAttr, 0);
+        int flags = a.getInt(R.styleable.InkView_inkFlags, DEFAULT_FLAGS);
+
+        init(flags);
     }
 
-    private void init()
+    private void init(int flags)
     {
+        // init flags
+        setFlags(flags);
+
         // init screen density
         DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
         mDensity = (metrics.xdpi + metrics.ydpi) / 2f;
@@ -176,11 +229,70 @@ public class InkView extends View
     // Public Methods
     //--------------------------------------
 
+    /**
+     * Sets the feature flags for the view. This will overwrite any previously set flag
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     */
+    public void setFlags(int flags)
+    {
+        mFlags = flags;
+    }
+
+    /**
+     * Adds the feature flag(s) to the view.
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     */
+    public void addFlags(int flags)
+    {
+        mFlags |= flags;
+    }
+
+    /**
+     * Removes the feature flag(s) from the view.
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     */
+    public void removeFlags(int flags)
+    {
+        mFlags &= ~flags;
+    }
+
+    /**
+     * Checks to see if the view has the supplied flag(s)
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     * @return True or False
+     */
+    public boolean hasFlags(int flags)
+    {
+        return (mFlags & flags) > 0;
+    }
+
+    /**
+     * Clears all feature flags from the view
+     */
+    public void clearFlags()
+    {
+        mFlags = 0;
+    }
+
+    /**
+     * Returns the current rendering mode for the view
+     *
+     * @return The mode
+     */
     public Mode getMode()
     {
         return mMode;
     }
 
+    /**
+     * Sets the current rendering mode on the view
+     *
+     * @param mode A mode
+     */
     public void setMode(Mode mode)
     {
         mMode = mode;
@@ -228,7 +340,7 @@ public class InkView extends View
     }
 
     /**
-     * Sets the minumum stroke width
+     * Sets the minimum stroke width
      *
      * @param width The width (in dp)
      */
@@ -237,11 +349,22 @@ public class InkView extends View
         mMinStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
     }
 
+    /**
+     * Returns the smoothing ratio
+     *
+     * @return The smoothing ratio
+     */
     public float getSmoothingRatio()
     {
         return mSmoothingRatio;
     }
 
+    /**
+     * Sets the smoothing ratio for calculating control points<br/>
+     * This value is ignored when the FLAG_INTERPOLATING is removed
+     *
+     * @param ratio
+     */
     public void setSmoothingRatio(float ratio)
     {
         mSmoothingRatio = Math.max(Math.min(ratio, 1f), 0f);
@@ -282,6 +405,7 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with a transparent background
+     *
      * @return The bitmap
      */
     public Bitmap getBitmap()
@@ -291,6 +415,7 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with the specified background color
+     *
      * @param backgroundColor The background color for the bitmap
      * @return The bitmap
      */
@@ -311,6 +436,14 @@ public class InkView extends View
         return bitmap;
     }
 
+    /**
+     * Draws a bitmap to the view, with its top left corner at (x,y)
+     *
+     * @param bitmap The bitmap to draw
+     * @param x      The destination x coordinate of the bitmap in relation to the view
+     * @param y      The destination y coordinate of the bitmap in relation to the view
+     * @param paint  The paint used to draw the bitmap (may be null)
+     */
     public void drawBitmap(Bitmap bitmap, float x, float y, Paint paint)
     {
         mCanvas.drawBitmap(bitmap, x, y, paint);
@@ -323,7 +456,7 @@ public class InkView extends View
     // Util
     //--------------------------------------
 
-    float getDensity()
+    private float getDensity()
     {
         return mDensity;
     }
@@ -385,7 +518,12 @@ public class InkView extends View
 
     private float computeStrokeWidth(float velocity)
     {
-        return mMaxStrokeWidth - (mMaxStrokeWidth - mMinStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
+        // compute responsive width
+        if (hasFlags(FLAG_RESPONSIVE_WIDTH)) {
+            return mMaxStrokeWidth - (mMaxStrokeWidth - mMinStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
+        }
+
+        return mMaxStrokeWidth;
     }
 
     private void draw(InkPoint p)
@@ -414,65 +552,83 @@ public class InkView extends View
         float endWidth = filterRatio * desiredWidth + (1f - filterRatio) * startWidth;
         float deltaWidth = endWidth - startWidth;
 
-        // compute # of steps to interpolate in the bezier curve
-        int steps = (int) (Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) / 5);
+        // interpolate bezier curve
+        if (hasFlags(FLAG_INTERPOLATION)) {
 
-        // computational setup for differentials used to interpolate the bezier curve
-        float u = 1f / (steps + 1);
-        float uu = u * u;
-        float uuu = u * u * u;
+            // compute # of steps to interpolate in the bezier curve
+            int steps = (int) (Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) / 5);
 
-        float pre1 = 3f * u;
-        float pre2 = 3f * uu;
-        float pre3 = 6f * uu;
-        float pre4 = 6f * uuu;
+            // computational setup for differentials used to interpolate the bezier curve
+            float u = 1f / (steps + 1);
+            float uu = u * u;
+            float uuu = u * u * u;
 
-        float tmp1x = p1.x - p1.c2x * 2f + p2.c1x;
-        float tmp1y = p1.y - p1.c2y * 2f + p2.c1y;
-        float tmp2x = (p1.c2x - p2.c1x) * 3f - p1.x + p2.x;
-        float tmp2y = (p1.c2y - p2.c1y) * 3f - p1.y + p2.y;
+            float pre1 = 3f * u;
+            float pre2 = 3f * uu;
+            float pre3 = 6f * uu;
+            float pre4 = 6f * uuu;
 
-        float dx = (p1.c2x - p1.x) * pre1 + tmp1x * pre2 + tmp2x * uuu;
-        float dy = (p1.c2y - p1.y) * pre1 + tmp1y * pre2 + tmp2y * uuu;
-        float ddx = tmp1x * pre3 + tmp2x * pre4;
-        float ddy = tmp1y * pre3 + tmp2y * pre4;
-        float dddx = tmp2x * pre4;
-        float dddy = tmp2y * pre4;
+            float tmp1x = p1.x - p1.c2x * 2f + p2.c1x;
+            float tmp1y = p1.y - p1.c2y * 2f + p2.c1y;
+            float tmp2x = (p1.c2x - p2.c1x) * 3f - p1.x + p2.x;
+            float tmp2y = (p1.c2y - p2.c1y) * 3f - p1.y + p2.y;
 
-        float x1 = p1.x;
-        float y1 = p1.y;
-        float x2, y2;
+            float dx = (p1.c2x - p1.x) * pre1 + tmp1x * pre2 + tmp2x * uuu;
+            float dy = (p1.c2y - p1.y) * pre1 + tmp1y * pre2 + tmp2y * uuu;
+            float ddx = tmp1x * pre3 + tmp2x * pre4;
+            float ddy = tmp1y * pre3 + tmp2y * pre4;
+            float dddx = tmp2x * pre4;
+            float dddy = tmp2y * pre4;
 
-        // iterate over each step and draw the curve
-        int i = 0;
-        while (i++ < steps) {
-            x2 = x1 + dx;
-            y2 = y1 + dy;
+            float x1 = p1.x;
+            float y1 = p1.y;
+            float x2, y2;
 
-            mPaint.setStrokeWidth(startWidth + deltaWidth * i / steps);
-            mCanvas.drawLine(x1, y1, x2, y2, mPaint);
+            // iterate over each step and draw the curve
+            int i = 0;
+            while (i++ < steps) {
+                x2 = x1 + dx;
+                y2 = y1 + dy;
 
-            x1 = x2;
-            y1 = y2;
-            dx += ddx;
-            dy += ddy;
-            ddx += dddx;
-            ddy += dddy;
+                mPaint.setStrokeWidth(startWidth + deltaWidth * i / steps);
+                mCanvas.drawLine(x1, y1, x2, y2, mPaint);
+
+                x1 = x2;
+                y1 = y2;
+                dx += ddx;
+                dy += ddy;
+                ddx += dddx;
+                ddy += dddy;
+            }
+
+            mPaint.setStrokeWidth(endWidth);
+            mCanvas.drawLine(x1, y1, p2.x, p2.y, mPaint);
         }
-
-        mPaint.setStrokeWidth(endWidth);
-        mCanvas.drawLine(x1, y1, p2.x, p2.y, mPaint);
+        // no interpolation, draw line between points
+        else {
+            mCanvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
+            mPaint.setStrokeWidth(endWidth);
+        }
 
         // draw debug layer
         if (mMode == Mode.DEBUG) {
-            mDebugCanvas.drawLine(p1.c1x, p1.c1y, p1.c2x, p1.c2y, mDebugLinePaint);
-            mDebugCanvas.drawCircle(p1.c1x, p1.c1y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p1.c2x, p1.c2y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p1.x, p1.y, mMaxStrokeWidth / 2f, mDebugPointPaint);
-            mDebugCanvas.drawLine(p2.c1x, p2.c1y, p2.c2x, p2.c2y, mDebugLinePaint);
-            mDebugCanvas.drawCircle(p2.c1x, p2.c1y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p2.c2x, p2.c2y, mMinStrokeWidth / 2f, mDebugControlPaint);
-            mDebugCanvas.drawCircle(p2.x, p2.y, mMaxStrokeWidth / 2f, mDebugPointPaint);
+
+            // draw control points if interpolating
+            if (hasFlags(FLAG_INTERPOLATION)) {
+                float controlRadius = mMaxStrokeWidth / 3f;
+
+                mDebugCanvas.drawLine(p1.c1x, p1.c1y, p1.c2x, p1.c2y, mDebugLinePaint);
+                mDebugCanvas.drawLine(p2.c1x, p2.c1y, p2.c2x, p2.c2y, mDebugLinePaint);
+                mDebugCanvas.drawCircle(p1.c1x, p1.c1y, controlRadius, mDebugControlPaint);
+                mDebugCanvas.drawCircle(p1.c2x, p1.c2y, controlRadius, mDebugControlPaint);
+                mDebugCanvas.drawCircle(p2.c1x, p2.c1y, controlRadius, mDebugControlPaint);
+                mDebugCanvas.drawCircle(p2.c2x, p2.c2y, controlRadius, mDebugControlPaint);
+            }
+
+            float pointRadius = mMaxStrokeWidth / 1.5f;
+
+            mDebugCanvas.drawCircle(p1.x, p1.y, pointRadius, mDebugPointPaint);
+            mDebugCanvas.drawCircle(p2.x, p2.y, pointRadius, mDebugPointPaint);
         }
 
         invalidate();
@@ -505,12 +661,14 @@ public class InkView extends View
     // Util Classes
     //--------------------------------------
 
-    private class InkPoint
+    public class InkPoint
     {
         public float x, y, c1x, c1y, c2x, c2y, velocity;
         public long time;
 
-        public InkPoint() {}
+        public InkPoint()
+        {
+        }
 
         public InkPoint(float x, float y, long time)
         {
