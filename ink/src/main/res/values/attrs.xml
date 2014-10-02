@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="InkView">
-        <!-- Feature flags for InkView -->
+        <!-- Feature flags for InkView. Defaults to "interpolation|responsiveWeight" -->
         <attr name="inkFlags">
             <!-- No features turned on -->
             <flag name="none" value="0"/>
