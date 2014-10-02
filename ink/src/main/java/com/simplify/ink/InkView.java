@@ -1,6 +1,5 @@
 package com.simplify.ink;
 
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,27 +15,50 @@ import java.util.ArrayList;
 
 public class InkView extends View
 {
+    /**
+     * The rendering mode for the view
+     */
     public enum Mode
     {
-        NORMAL, DEBUG
+        /**
+         * Renders the paths on the drawing layer
+         */
+        NORMAL,
+
+        /**
+         * Renders the data points and their corresponding control points on top of the drawing layer
+         */
+        DEBUG
     }
 
-    // defaults
+    /**
+     * The default maximum stroke width (dp)<br/>
+     * Will be used as the standard stroke width if FLAG_RESPONSIVE_WIDTH is removed
+     */
     public static final float DEFAULT_MAX_STROKE_WIDTH = 5f;
+
+    /**
+     * The default minimum stroke width (dp)
+     */
     public static final float DEFAULT_MIN_STROKE_WIDTH = 1.5f;
+
+    /**
+     * The default smoothing ratio for calculating the control points for the bezier curves<br/>
+     * Will be ignored if FLAG_INTERPOLATION is removed
+     */
     public static final float DEFAULT_SMOOTHING_RATIO = 0.75f;
 
-    // flags
     /**
-     * When this flag is added, paths will be drawn with as cubic-bezier curves
+     * When this flag is added, paths will be drawn as cubic-bezier curves
      */
-    public static final byte FLAG_INTERPOLATION = 1;
+    public static final int FLAG_INTERPOLATION = 1;
 
     /**
      * When present, the width of the paths will be responsive to the velocity of the stroke<br/>
      * When missing, the width of the path will be the the max stroke width
      */
-    public static final byte FLAG_RESPONSIVE_WIDTH = 1 << 1;
+    public static final int FLAG_RESPONSIVE_WIDTH = 1 << 1;
+
 
     // constants
     private static final float THRESHOLD_VELOCITY = 7f;         // in/s
@@ -45,7 +67,7 @@ public class InkView extends View
     private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
 
     // settings
-    private byte mFlags = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
+    private int mFlags = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
     private Mode mMode = Mode.NORMAL;
     private float mMaxStrokeWidth;
     private float mMinStrokeWidth;
@@ -76,15 +98,34 @@ public class InkView extends View
         init();
     }
 
+    public InkView(Context context, int flags)
+    {
+        super(context);
+        init(flags);
+    }
+
     public InkView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
-        init();
+        init(attrs);
     }
 
     public InkView(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
+        init(attrs);
+    }
+
+    private void init(AttributeSet attrs)
+    {
+        init(0);
+    }
+
+    private void init(int flags)
+    {
+        // init flags
+        setFlags(flags);
+
         init();
     }
 
@@ -192,36 +233,70 @@ public class InkView extends View
     // Public Methods
     //--------------------------------------
 
-    public void setFlags(byte flags)
+    /**
+     * Sets the feature flags for the view. This will overwrite any previously set flag
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     */
+    public void setFlags(int flags)
     {
         mFlags = flags;
     }
 
-    public void addFlags(byte flags)
+    /**
+     * Adds the feature flag(s) to the view.
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     */
+    public void addFlags(int flags)
     {
         mFlags |= flags;
     }
 
-    public void removeFlags(byte flags)
+    /**
+     * Removes the feature flag(s) from the view.
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     */
+    public void removeFlags(int flags)
     {
         mFlags &= ~flags;
     }
 
-    public boolean hasFlags(byte flags)
+    /**
+     * Checks to see if the view has the supplied flag(s)
+     *
+     * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
+     * @return True or False
+     */
+    public boolean hasFlags(int flags)
     {
         return (mFlags & flags) > 0;
     }
 
+    /**
+     * Clears all feature flags from the view
+     */
     public void clearFlags()
     {
         mFlags = 0;
     }
 
+    /**
+     * Returns the current rendering mode for the view
+     *
+     * @return The mode
+     */
     public Mode getMode()
     {
         return mMode;
     }
 
+    /**
+     * Sets the current rendering mode on the view
+     *
+     * @param mode A mode
+     */
     public void setMode(Mode mode)
     {
         mMode = mode;
@@ -269,7 +344,7 @@ public class InkView extends View
     }
 
     /**
-     * Sets the minumum stroke width
+     * Sets the minimum stroke width
      *
      * @param width The width (in dp)
      */
@@ -278,6 +353,11 @@ public class InkView extends View
         mMinStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
     }
 
+    /**
+     * Returns the smoothing ratio
+     *
+     * @return The smoothing ratio
+     */
     public float getSmoothingRatio()
     {
         return mSmoothingRatio;
@@ -285,7 +365,8 @@ public class InkView extends View
 
     /**
      * Sets the smoothing ratio for calculating control points<br/>
-     * When the FLAG_INTERPOLATING is set
+     * This value is ignored when the FLAG_INTERPOLATING is removed
+     *
      * @param ratio
      */
     public void setSmoothingRatio(float ratio)
@@ -359,6 +440,14 @@ public class InkView extends View
         return bitmap;
     }
 
+    /**
+     * Draws a bitmap to the view, with its top left corner at (x,y)
+     *
+     * @param bitmap The bitmap to draw
+     * @param x      The destination x coordinate of the bitmap in relation to the view
+     * @param y      The destination y coordinate of the bitmap in relation to the view
+     * @param paint  The paint used to draw the bitmap (may be null)
+     */
     public void drawBitmap(Bitmap bitmap, float x, float y, Paint paint)
     {
         mCanvas.drawBitmap(bitmap, x, y, paint);
