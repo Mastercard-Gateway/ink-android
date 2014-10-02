@@ -1,6 +1,7 @@
 package com.simplify.ink;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -65,9 +66,10 @@ public class InkView extends View
     private static final float THRESHOLD_ACCELERATION = 3f;    // in/s^2
     private static final float FILTER_RATIO_MIN = 0.22f;
     private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
+    private static final int DEFAULT_FLAGS = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
 
     // settings
-    private int mFlags = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
+    private int mFlags;
     private Mode mMode = Mode.NORMAL;
     private float mMaxStrokeWidth;
     private float mMinStrokeWidth;
@@ -94,31 +96,30 @@ public class InkView extends View
 
     public InkView(Context context)
     {
-        super(context);
-        init();
+        this(context, DEFAULT_FLAGS);
     }
 
     public InkView(Context context, int flags)
     {
         super(context);
+
         init(flags);
     }
 
     public InkView(Context context, AttributeSet attrs)
     {
-        super(context, attrs);
-        init(attrs);
+        this(context, attrs, 0);
     }
 
     public InkView(Context context, AttributeSet attrs, int defStyleAttr)
     {
         super(context, attrs, defStyleAttr);
-        init(attrs);
-    }
 
-    private void init(AttributeSet attrs)
-    {
-        init(mFlags);
+        // get flags from attributes
+        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.InkView, defStyleAttr, 0);
+        int flags = a.getInt(R.styleable.InkView_inkFlags, DEFAULT_FLAGS);
+
+        init(flags);
     }
 
     private void init(int flags)
@@ -126,11 +127,6 @@ public class InkView extends View
         // init flags
         setFlags(flags);
 
-        init();
-    }
-
-    private void init()
-    {
         // init screen density
         DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
         mDensity = (metrics.xdpi + metrics.ydpi) / 2f;
