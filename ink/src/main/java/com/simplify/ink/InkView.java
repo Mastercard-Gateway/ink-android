@@ -456,7 +456,7 @@ public class InkView extends View
     // Util
     //--------------------------------------
 
-    float getDensity()
+    private float getDensity()
     {
         return mDensity;
     }
@@ -661,7 +661,7 @@ public class InkView extends View
     // Util Classes
     //--------------------------------------
 
-    private class InkPoint
+    public class InkPoint
     {
         public float x, y, c1x, c1y, c2x, c2y, velocity;
         public long time;
