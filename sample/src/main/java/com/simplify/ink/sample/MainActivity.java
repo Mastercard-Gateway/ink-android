@@ -3,38 +3,69 @@ package com.simplify.ink.sample;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.simplify.ink.InkView;
 
 public class MainActivity extends Activity
 {
+    InkView mInkView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final InkView ink = (InkView) findViewById(R.id.ink);
+        mInkView = (InkView) findViewById(R.id.ink);
+    }
 
-        findViewById(R.id.button_clear).setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                ink.clear();
-            }
-        });
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.options, menu);
+        menu.findItem(R.id.menu_interpolation).setChecked(mInkView.hasFlags(InkView.FLAG_INTERPOLATION));
+        menu.findItem(R.id.menu_responsive).setChecked(mInkView.hasFlags(InkView.FLAG_RESPONSIVE_WIDTH));
+        menu.findItem(R.id.menu_debug).setChecked(mInkView.getMode() == InkView.Mode.DEBUG);
 
-        ((CheckBox) findViewById(R.id.check_debug)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
-        {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
-            {
-                ink.setMode(isChecked ? InkView.Mode.DEBUG : InkView.Mode.NORMAL);
-            }
-        });
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId()) {
+            case R.id.menu_clear:
+                mInkView.clear();
+                return true;
+
+            case R.id.menu_interpolation:
+                item.setChecked(!item.isChecked());
+                if (item.isChecked()) {
+                    mInkView.addFlags(InkView.FLAG_INTERPOLATION);
+                }
+                else {
+                    mInkView.removeFlags(InkView.FLAG_INTERPOLATION);
+                }
+                return true;
+
+            case R.id.menu_responsive:
+                item.setChecked(!item.isChecked());
+                if (item.isChecked()) {
+                    mInkView.addFlags(InkView.FLAG_RESPONSIVE_WIDTH);
+                }
+                else {
+                    mInkView.removeFlags(InkView.FLAG_RESPONSIVE_WIDTH);
+                }
+                return true;
+
+            case R.id.menu_debug:
+                item.setChecked(!item.isChecked());
+                mInkView.setMode(item.isChecked() ? InkView.Mode.DEBUG : InkView.Mode.NORMAL);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

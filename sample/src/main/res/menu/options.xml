@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_clear"
+        android:title="@string/clear"
+        android:icon="@drawable/ic_action_discard"
+        android:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/menu_interpolation"
+        android:title="@string/interpolation"
+        android:checkable="true"
+        android:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_responsive"
+        android:title="@string/responsive_weight"
+        android:checkable="true"
+        android:showAsAction="never"/>
+    <item
+        android:id="@+id/menu_debug"
+        android:title="@string/debug_mode"
+        android:checkable="true"
+        android:showAsAction="never"/>
+</menu>

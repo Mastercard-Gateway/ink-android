@@ -118,7 +118,7 @@ public class InkView extends View
 
     private void init(AttributeSet attrs)
     {
-        init(0);
+        init(mFlags);
     }
 
     private void init(int flags)
