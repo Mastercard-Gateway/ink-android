@@ -27,7 +27,7 @@ public class MainActivity extends Activity
         getMenuInflater().inflate(R.menu.options, menu);
         menu.findItem(R.id.menu_interpolation).setChecked(mInkView.hasFlag(InkView.FLAG_INTERPOLATION));
         menu.findItem(R.id.menu_responsive).setChecked(mInkView.hasFlag(InkView.FLAG_RESPONSIVE_WIDTH));
-        menu.findItem(R.id.menu_debug).setChecked(mInkView.hasFlag(InkView.FLAG_DEBUG_POINTS));
+        menu.findItem(R.id.menu_debug).setChecked(mInkView.hasFlag(InkView.FLAG_DEBUG));
 
         return true;
     }
@@ -63,10 +63,10 @@ public class MainActivity extends Activity
             case R.id.menu_debug:
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
-                    mInkView.addFlag(InkView.FLAG_DEBUG_POINTS);
+                    mInkView.addFlag(InkView.FLAG_DEBUG);
                 }
                 else {
-                    mInkView.removeFlag(InkView.FLAG_DEBUG_POINTS);
+                    mInkView.removeFlag(InkView.FLAG_DEBUG);
                 }
                 return true;
         }

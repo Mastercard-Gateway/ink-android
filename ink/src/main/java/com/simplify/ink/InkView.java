@@ -47,7 +47,7 @@ public class InkView extends View
     /**
      * When present, the data points for the path are drawn with their respective control points
      */
-    public static final int FLAG_DEBUG_POINTS = 1 << 2;
+    public static final int FLAG_DEBUG = 1 << 2;
 
 
     // constants
@@ -593,7 +593,7 @@ public class InkView extends View
         }
 
         // draw debug layer
-        if (hasFlags(FLAG_DEBUG_POINTS)) {
+        if (hasFlags(FLAG_DEBUG)) {
 
             // draw control points if interpolating
             if (hasFlags(FLAG_INTERPOLATION)) {

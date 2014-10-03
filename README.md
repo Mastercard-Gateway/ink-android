@@ -78,8 +78,8 @@ or you can also include a background color:
 Troubleshooting
 ---------------
 
-If things don't look quite right (not all touch screens are created equal), then there is a debug mode that is helpful in diagnosing problems. The sample app includes a toggle for this mode which draws the data points and their respective control points.
+If things don't look quite right (not all touch screens are created equal), then there is a debug flag that is helpful in diagnosing problems. The sample app includes a toggle for this flag which draws the data points and their respective control points.
 
-For troubleshooting inquiries, please include device information and a screenshot of the problem with debug mode enabled, if relevant.
+For troubleshooting inquiries, please include device information and a screenshot of the problem with the debug flag on, if relevant.
 
 Enjoy!
