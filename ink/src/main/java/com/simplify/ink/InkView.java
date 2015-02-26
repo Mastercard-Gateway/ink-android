@@ -107,6 +107,7 @@ public class InkView extends View
         // get flags from attributes
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.InkView, defStyleAttr, 0);
         int flags = a.getInt(R.styleable.InkView_inkFlags, DEFAULT_FLAGS);
+        a.recycle();
 
         init(flags);
     }
@@ -176,12 +177,13 @@ public class InkView extends View
 
         // on move, add next point
         else if (action == MotionEvent.ACTION_MOVE) {
-            addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
+            if (!mPointQueue.get(mPointQueue.size() - 1).equals(e.getX(), e.getY())) {
+                addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
+            }
         }
 
         // on up, draw remaining queue
         if (action == MotionEvent.ACTION_UP) {
-
             // draw final points
             if (mPointQueue.size() == 1) {
                 draw(mPointQueue.get(0));
@@ -349,7 +351,7 @@ public class InkView extends View
     /**
      * Sets the smoothing ratio for calculating control points<br/>
      * This value is ignored when the FLAG_INTERPOLATING is removed
-     * @param ratio
+     * @param ratio The smoothing ratio, 0 < ratio < 1
      */
     public void setSmoothingRatio(float ratio)
     {
@@ -672,6 +674,16 @@ public class InkView extends View
             c2y = y;
 
             return this;
+        }
+
+        public boolean equals(InkPoint p)
+        {
+            return equals(p.x, p.y);
+        }
+
+        public boolean equals(float x, float y)
+        {
+            return this.x == x && this.y == y;
         }
 
         public float distanceTo(InkPoint p)
