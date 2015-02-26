@@ -15,20 +15,20 @@ Download
 
 You can download the latest version of the the binary here:
 
-    http://dl.bintray.com/simplify/Android/com/simplify/ink/0.2/ink-0.2.aar
+    http://dl.bintray.com/simplify/Android/com/simplify/ink/0.2.1/ink-0.2.1.aar
 
 or via Maven:
 
     <dependency>
         <groupId>com.simplify</groupId>
         <artifactId>ink</artifactId>
-        <version>0.2</version>
+        <version>0.2.1</version>
         <type>aar</type>
     </dependency>
 
 or via Gradle:
 
-    compile group: 'com.simplify', name: 'ink', version: '0.2', ext: 'aar'
+    compile group: 'com.simplify', name: 'ink', version: '0.2.1', ext: 'aar'
 
 
 Usage

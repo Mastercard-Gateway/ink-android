@@ -25,9 +25,9 @@ public class MainActivity extends Activity
     public boolean onCreateOptionsMenu(Menu menu)
     {
         getMenuInflater().inflate(R.menu.options, menu);
-        menu.findItem(R.id.menu_interpolation).setChecked(mInkView.hasFlags(InkView.FLAG_INTERPOLATION));
-        menu.findItem(R.id.menu_responsive).setChecked(mInkView.hasFlags(InkView.FLAG_RESPONSIVE_WIDTH));
-        menu.findItem(R.id.menu_debug).setChecked(mInkView.getMode() == InkView.Mode.DEBUG);
+        menu.findItem(R.id.menu_interpolation).setChecked(mInkView.hasFlag(InkView.FLAG_INTERPOLATION));
+        menu.findItem(R.id.menu_responsive).setChecked(mInkView.hasFlag(InkView.FLAG_RESPONSIVE_WIDTH));
+        menu.findItem(R.id.menu_debug).setChecked(mInkView.hasFlag(InkView.FLAG_DEBUG));
 
         return true;
     }
@@ -43,26 +43,31 @@ public class MainActivity extends Activity
             case R.id.menu_interpolation:
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
-                    mInkView.addFlags(InkView.FLAG_INTERPOLATION);
+                    mInkView.addFlag(InkView.FLAG_INTERPOLATION);
                 }
                 else {
-                    mInkView.removeFlags(InkView.FLAG_INTERPOLATION);
+                    mInkView.removeFlag(InkView.FLAG_INTERPOLATION);
                 }
                 return true;
 
             case R.id.menu_responsive:
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
-                    mInkView.addFlags(InkView.FLAG_RESPONSIVE_WIDTH);
+                    mInkView.addFlag(InkView.FLAG_RESPONSIVE_WIDTH);
                 }
                 else {
-                    mInkView.removeFlags(InkView.FLAG_RESPONSIVE_WIDTH);
+                    mInkView.removeFlag(InkView.FLAG_RESPONSIVE_WIDTH);
                 }
                 return true;
 
             case R.id.menu_debug:
                 item.setChecked(!item.isChecked());
-                mInkView.setMode(item.isChecked() ? InkView.Mode.DEBUG : InkView.Mode.NORMAL);
+                if (item.isChecked()) {
+                    mInkView.addFlag(InkView.FLAG_DEBUG);
+                }
+                else {
+                    mInkView.removeFlag(InkView.FLAG_DEBUG);
+                }
                 return true;
         }
 
