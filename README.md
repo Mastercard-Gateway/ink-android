@@ -3,10 +3,6 @@ Ink
 
 A light-weight, customizable view for capturing a signature or drawing in an Android app.
 
-The InkView class provides a drawing layer which converts discrete single-touch input (aka. your drawing) into smooth, weighted cubic-bezier curves (aka. pretty pictures).
-
-When you swipe your finger on a touch screen, you leave a trail of points. The InkView class looks at these points and interprets a smooth path between them. The thickness of the line is altered based on the velocity and acceleration of the swipe. More or less, it holds true that the faster the swipe, the thinner the line.
-
 ![screenshot](./screenshot.png)
 
 
