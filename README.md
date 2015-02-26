@@ -5,7 +5,7 @@ A light-weight, customizable view for capturing a signature or drawing in an And
 
 The InkView class provides a drawing layer which converts discrete single-touch input (aka. your drawing) into smooth, weighted cubic-bezier curves (aka. pretty pictures).
 
-When you swipe your finger on a touch screen, you leave a trail of points, not lines. The InkView class looks at these points and interprets a smooth path between them. The thickness of the line is altered based on the velocity and acceleration of the swipe. More or less, it holds true that the faster the swipe, the thinner the line.
+When you swipe your finger on a touch screen, you leave a trail of points. The InkView class looks at these points and interprets a smooth path between them. The thickness of the line is altered based on the velocity and acceleration of the swipe. More or less, it holds true that the faster the swipe, the thinner the line.
 
 ![screenshot](./screenshot.png)
 
@@ -48,7 +48,7 @@ Then, within your code, fetch the view and initialize it:
     ink.setMinStrokeWidth(1.5f);
     ink.setMaxStrokeWidth(6f);
 
-Features can be toggled on and off by using the custom attributes on the xml tag (all feature flags default to On):
+Features can be toggled on and off by using the custom attributes on the xml tag:
 
     // add this to the root element in your layout
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -64,6 +64,8 @@ or by setting the flags manually in code:
     InkView ink = (InkView) findViewById(R.id.ink);
     ink.setFlags(InkView.FLAG_INTERPOLATION | InkView.FLAG_RESPONSIVE_WEIGHT);
 
+By default, interpolation and responsive weight flags are On.
+
 You can capture the drawing in the form of a bitmap by calling:
 
     Bitmap drawing = ink.getBitmap();
@@ -76,8 +78,8 @@ or you can also include a background color:
 Troubleshooting
 ---------------
 
-If things don't look quite right (not all touch screens are created equal), then there is a debug mode that is helpful in diagnosing problems. The sample app includes a toggle for this mode which draws the data points and their respective control points.
+If things don't look quite right (not all touch screens are created equal), then there is a debug flag that is helpful in diagnosing problems. The sample app includes a toggle for this flag which draws the data points and their respective control points.
 
-For troubleshooting inquiries, please include device information and a screenshot of the problem with debug mode enabled, if relevant.
+For troubleshooting inquiries, please include device information and a screenshot of the problem with the debug flag on, if relevant.
 
 Enjoy!
