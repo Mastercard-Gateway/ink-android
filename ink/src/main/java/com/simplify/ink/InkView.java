@@ -17,22 +17,6 @@ import java.util.ArrayList;
 public class InkView extends View
 {
     /**
-     * The rendering mode for the view
-     */
-    public enum Mode
-    {
-        /**
-         * Renders the paths on the drawing layer
-         */
-        NORMAL,
-
-        /**
-         * Renders the data points and their corresponding control points on top of the drawing layer
-         */
-        DEBUG
-    }
-
-    /**
      * The default maximum stroke width (dp)<br/>
      * Will be used as the standard stroke width if FLAG_RESPONSIVE_WIDTH is removed
      */
@@ -60,6 +44,11 @@ public class InkView extends View
      */
     public static final int FLAG_RESPONSIVE_WIDTH = 1 << 1;
 
+    /**
+     * When present, the data points for the path are drawn with their respective control points
+     */
+    public static final int FLAG_DEBUG = 1 << 2;
+
 
     // constants
     private static final float THRESHOLD_VELOCITY = 7f;         // in/s
@@ -70,7 +59,6 @@ public class InkView extends View
 
     // settings
     private int mFlags;
-    private Mode mMode = Mode.NORMAL;
     private float mMaxStrokeWidth;
     private float mMinStrokeWidth;
     private float mSmoothingRatio;
@@ -87,6 +75,7 @@ public class InkView extends View
     private ArrayList<InkListener> mListeners = new ArrayList<InkListener>();
 
     // debug
+    private boolean mHasDebugLayer = false;
     private Bitmap mDebugBitmap;
     private Canvas mDebugCanvas;
     private Paint mDebugPointPaint;
@@ -118,6 +107,7 @@ public class InkView extends View
         // get flags from attributes
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.InkView, defStyleAttr, 0);
         int flags = a.getInt(R.styleable.InkView_inkFlags, DEFAULT_FLAGS);
+        a.recycle();
 
         init(flags);
     }
@@ -187,12 +177,13 @@ public class InkView extends View
 
         // on move, add next point
         else if (action == MotionEvent.ACTION_MOVE) {
-            addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
+            if (!mPointQueue.get(mPointQueue.size() - 1).equals(e.getX(), e.getY())) {
+                addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
+            }
         }
 
         // on up, draw remaining queue
         if (action == MotionEvent.ACTION_UP) {
-
             // draw final points
             if (mPointQueue.size() == 1) {
                 draw(mPointQueue.get(0));
@@ -216,8 +207,8 @@ public class InkView extends View
         // simply paint the bitmap on the canvas
         canvas.drawBitmap(mBitmap, 0, 0, null);
 
-        // draw debug layer
-        if (mMode == Mode.DEBUG) {
+        // draw debug layer if it has some data
+        if (mHasDebugLayer) {
             canvas.drawBitmap(mDebugBitmap, 0, 0, null);
         }
 
@@ -231,7 +222,6 @@ public class InkView extends View
 
     /**
      * Sets the feature flags for the view. This will overwrite any previously set flag
-     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      */
     public void setFlags(int flags)
@@ -241,7 +231,6 @@ public class InkView extends View
 
     /**
      * Adds the feature flag(s) to the view.
-     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      */
     public void addFlags(int flags)
@@ -250,8 +239,16 @@ public class InkView extends View
     }
 
     /**
+     * Alias for {@link #addFlags(int) addFlags}
+     * @param flag A feature flag (ie. FLAG_INTERPOLATION)
+     */
+    public void addFlag(int flag)
+    {
+        addFlags(flag);
+    }
+
+    /**
      * Removes the feature flag(s) from the view.
-     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      */
     public void removeFlags(int flags)
@@ -260,14 +257,32 @@ public class InkView extends View
     }
 
     /**
+     * Alias for {@link #removeFlags(int) removeFlags}
+     * @param flag A feature flag (ie. FLAG_INTERPOLATION)
+     */
+    public void removeFlag(int flag)
+    {
+        removeFlags(flag);
+    }
+
+    /**
      * Checks to see if the view has the supplied flag(s)
-     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      * @return True or False
      */
     public boolean hasFlags(int flags)
     {
         return (mFlags & flags) > 0;
+    }
+
+    /**
+     * Alias for {@link #hasFlags(int flags) hasFlags}
+     * @param flag A feature flag (ie. FLAG_INTERPOLATION)
+     * @return True or False
+     */
+    public boolean hasFlag(int flag)
+    {
+        return hasFlags(flag);
     }
 
     /**
@@ -279,29 +294,7 @@ public class InkView extends View
     }
 
     /**
-     * Returns the current rendering mode for the view
-     *
-     * @return The mode
-     */
-    public Mode getMode()
-    {
-        return mMode;
-    }
-
-    /**
-     * Sets the current rendering mode on the view
-     *
-     * @param mode A mode
-     */
-    public void setMode(Mode mode)
-    {
-        mMode = mode;
-        clear();
-    }
-
-    /**
      * Sets a ink listener on the view
-     *
      * @param listener The listener
      */
     public void addInkListener(InkListener listener)
@@ -321,7 +314,6 @@ public class InkView extends View
 
     /**
      * Sets the ink color
-     *
      * @param color The color value
      */
     public void setColor(int color)
@@ -331,7 +323,6 @@ public class InkView extends View
 
     /**
      * Sets the maximum stroke width
-     *
      * @param width The width (in dp)
      */
     public void setMaxStrokeWidth(float width)
@@ -341,7 +332,6 @@ public class InkView extends View
 
     /**
      * Sets the minimum stroke width
-     *
      * @param width The width (in dp)
      */
     public void setMinStrokeWidth(float width)
@@ -351,7 +341,6 @@ public class InkView extends View
 
     /**
      * Returns the smoothing ratio
-     *
      * @return The smoothing ratio
      */
     public float getSmoothingRatio()
@@ -362,8 +351,7 @@ public class InkView extends View
     /**
      * Sets the smoothing ratio for calculating control points<br/>
      * This value is ignored when the FLAG_INTERPOLATING is removed
-     *
-     * @param ratio
+     * @param ratio The smoothing ratio, 0 < ratio < 1
      */
     public void setSmoothingRatio(float ratio)
     {
@@ -389,11 +377,10 @@ public class InkView extends View
         mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
 
-        // init debug
-        if (mMode == Mode.DEBUG) {
-            mDebugBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-            mDebugCanvas = new Canvas(mDebugBitmap);
-        }
+        // init debug bitmap cache
+        mDebugBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        mDebugCanvas = new Canvas(mDebugBitmap);
+        mHasDebugLayer = false;
 
         // notify listeners
         for (InkListener listener : mListeners) {
@@ -405,7 +392,6 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with a transparent background
-     *
      * @return The bitmap
      */
     public Bitmap getBitmap()
@@ -415,7 +401,6 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with the specified background color
-     *
      * @param backgroundColor The background color for the bitmap
      * @return The bitmap
      */
@@ -438,7 +423,6 @@ public class InkView extends View
 
     /**
      * Draws a bitmap to the view, with its top left corner at (x,y)
-     *
      * @param bitmap The bitmap to draw
      * @param x      The destination x coordinate of the bitmap in relation to the view
      * @param y      The destination y coordinate of the bitmap in relation to the view
@@ -611,7 +595,7 @@ public class InkView extends View
         }
 
         // draw debug layer
-        if (mMode == Mode.DEBUG) {
+        if (hasFlags(FLAG_DEBUG)) {
 
             // draw control points if interpolating
             if (hasFlags(FLAG_INTERPOLATION)) {
@@ -629,6 +613,8 @@ public class InkView extends View
 
             mDebugCanvas.drawCircle(p1.x, p1.y, pointRadius, mDebugPointPaint);
             mDebugCanvas.drawCircle(p2.x, p2.y, pointRadius, mDebugPointPaint);
+
+            mHasDebugLayer = true;
         }
 
         invalidate();
@@ -688,6 +674,16 @@ public class InkView extends View
             c2y = y;
 
             return this;
+        }
+
+        public boolean equals(InkPoint p)
+        {
+            return equals(p.x, p.y);
+        }
+
+        public boolean equals(float x, float y)
+        {
+            return this.x == x && this.y == y;
         }
 
         public float distanceTo(InkPoint p)
