@@ -1,34 +1,19 @@
-Ink
-===
+# Ink
+
 
 A light-weight, customizable view for capturing a signature or drawing in an Android app.
 
 ![screenshot](./screenshot.png)
 
 
-Download
---------
+## Import the Dependency [![maven-central](https://img.shields.io/maven-central/v/com.simplify/ink.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%20%22com.simplify%22%2C%20a%3A%22ink%22)
 
-You can download the latest version of the the binary here:
+To import the Android SDK, include it as a dependency in your build.gradle file
 
-    http://dl.bintray.com/simplify/Android/com/simplify/ink/0.2.1/ink-0.2.1.aar
-
-or via Maven:
-
-    <dependency>
-        <groupId>com.simplify</groupId>
-        <artifactId>ink</artifactId>
-        <version>0.2.1</version>
-        <type>aar</type>
-    </dependency>
-
-or via Gradle:
-
-    compile group: 'com.simplify', name: 'ink', version: '0.2.1', ext: 'aar'
+    compile 'com.simplify:ink:0.2.2'
 
 
-Usage
------
+## Usage
 
 To use the library, you must include the InkView class in your project. A simple solution is to reference it directly into your layout:
 
