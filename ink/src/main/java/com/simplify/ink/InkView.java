@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -72,6 +73,7 @@ public class InkView extends View
     private Bitmap mBitmap;
     private Canvas mCanvas;
     private Paint mPaint;
+    private RectF mDirty;
     private ArrayList<InkListener> mListeners = new ArrayList<InkListener>();
 
     // debug
@@ -145,6 +147,9 @@ public class InkView extends View
         setMaxStrokeWidth(DEFAULT_MAX_STROKE_WIDTH);
         setMinStrokeWidth(DEFAULT_MIN_STROKE_WIDTH);
         setSmoothingRatio(DEFAULT_SMOOTHING_RATIO);
+
+        // init dirty rect
+        mDirty = new RectF();
     }
 
 
@@ -440,12 +445,12 @@ public class InkView extends View
     // Util
     //--------------------------------------
 
-    private float getDensity()
+    float getDensity()
     {
         return mDensity;
     }
 
-    private void addPoint(InkPoint p)
+    void addPoint(InkPoint p)
     {
         mPointQueue.add(p);
 
@@ -491,7 +496,7 @@ public class InkView extends View
         }
     }
 
-    private InkPoint getRecycledPoint(float x, float y, long time)
+    InkPoint getRecycledPoint(float x, float y, long time)
     {
         if (mPointRecycle.size() == 0) {
             return new InkPoint(x, y, time);
@@ -500,7 +505,7 @@ public class InkView extends View
         return mPointRecycle.remove(0).reset(x, y, time);
     }
 
-    private float computeStrokeWidth(float velocity)
+    float computeStrokeWidth(float velocity)
     {
         // compute responsive width
         if (hasFlags(FLAG_RESPONSIVE_WIDTH)) {
@@ -510,7 +515,7 @@ public class InkView extends View
         return mMaxStrokeWidth;
     }
 
-    private void draw(InkPoint p)
+    void draw(InkPoint p)
     {
         mPaint.setStyle(Paint.Style.FILL);
 
@@ -520,8 +525,14 @@ public class InkView extends View
         invalidate();
     }
 
-    private void draw(InkPoint p1, InkPoint p2)
+    void draw(InkPoint p1, InkPoint p2)
     {
+        // init dirty rect
+        mDirty.left = Math.min(p1.x, p2.x);
+        mDirty.right = Math.max(p1.x, p2.x);
+        mDirty.top = Math.min(p1.y, p2.y);
+        mDirty.bottom = Math.max(p1.y, p2.y);
+
         mPaint.setStyle(Paint.Style.STROKE);
 
         // adjust low-pass ratio from changing acceleration
@@ -583,6 +594,12 @@ public class InkView extends View
                 dy += ddy;
                 ddx += dddx;
                 ddy += dddy;
+
+                // adjust dirty bounds to account for curve
+                mDirty.left = Math.min(mDirty.left, x1);
+                mDirty.right = Math.max(mDirty.right, x1);
+                mDirty.top = Math.min(mDirty.top, y1);
+                mDirty.bottom = Math.max(mDirty.bottom, y1);
             }
 
             mPaint.setStrokeWidth(endWidth);
@@ -607,6 +624,8 @@ public class InkView extends View
                 mDebugCanvas.drawCircle(p1.c2x, p1.c2y, controlRadius, mDebugControlPaint);
                 mDebugCanvas.drawCircle(p2.c1x, p2.c1y, controlRadius, mDebugControlPaint);
                 mDebugCanvas.drawCircle(p2.c2x, p2.c2y, controlRadius, mDebugControlPaint);
+
+                // TODO adjust dirty bounds to account for control points
             }
 
             float pointRadius = mMaxStrokeWidth / 1.5f;
@@ -617,7 +636,7 @@ public class InkView extends View
             mHasDebugLayer = true;
         }
 
-        invalidate();
+        invalidate((int) (mDirty.left - mMaxStrokeWidth / 2), (int) (mDirty.top - mMaxStrokeWidth / 2), (int) (mDirty.right + mMaxStrokeWidth / 2), (int) (mDirty.bottom + mMaxStrokeWidth / 2));
     }
 
 
