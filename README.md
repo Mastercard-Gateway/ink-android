@@ -24,7 +24,7 @@ or via Maven:
 
 or via Gradle:
 
-    compile group: 'com.simplify', name: 'ink', version: '0.2.1', ext: 'aar'
+    compile group: 'com.simplify:ink:0.2.1'
 
 
 Usage
