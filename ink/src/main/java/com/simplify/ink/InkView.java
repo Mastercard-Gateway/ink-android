@@ -18,7 +18,7 @@ import java.util.ArrayList;
 public class InkView extends View
 {
     /**
-     * The default maximum stroke width (dp)<br/>
+     * The default maximum stroke width (dp).
      * Will be used as the standard stroke width if FLAG_RESPONSIVE_WIDTH is removed
      */
     public static final float DEFAULT_MAX_STROKE_WIDTH = 5f;
@@ -29,7 +29,7 @@ public class InkView extends View
     public static final float DEFAULT_MIN_STROKE_WIDTH = 1.5f;
 
     /**
-     * The default smoothing ratio for calculating the control points for the bezier curves<br/>
+     * The default smoothing ratio for calculating the control points for the bezier curves.
      * Will be ignored if FLAG_INTERPOLATION is removed
      */
     public static final float DEFAULT_SMOOTHING_RATIO = 0.75f;
@@ -40,7 +40,7 @@ public class InkView extends View
     public static final int FLAG_INTERPOLATION = 1;
 
     /**
-     * When present, the width of the paths will be responsive to the velocity of the stroke<br/>
+     * When present, the width of the paths will be responsive to the velocity of the stroke.
      * When missing, the width of the path will be the the max stroke width
      */
     public static final int FLAG_RESPONSIVE_WIDTH = 1 << 1;
@@ -311,6 +311,7 @@ public class InkView extends View
 
     /**
      * Removes the registered ink listener from the view
+     * @param listener The listener
      */
     public void removeInkListener(InkListener listener)
     {
@@ -354,9 +355,9 @@ public class InkView extends View
     }
 
     /**
-     * Sets the smoothing ratio for calculating control points<br/>
+     * Sets the smoothing ratio for calculating control points.
      * This value is ignored when the FLAG_INTERPOLATING is removed
-     * @param ratio The smoothing ratio, 0 < ratio < 1
+     * @param ratio The smoothing ratio, between 0 and 1
      */
     public void setSmoothingRatio(float ratio)
     {
