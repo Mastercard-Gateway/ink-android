@@ -58,7 +58,7 @@ public class InkView extends View {
     static final float THRESHOLD_VELOCITY = 7f;         // in/s
     static final float THRESHOLD_ACCELERATION = 3f;    // in/s^2
     static final float FILTER_RATIO_MIN = 0.22f;
-    static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
+    static final float FILTER_RATIO_ACCELERATION_MODIFIER = 0.1f;
     static final int DEFAULT_FLAGS = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
     static final int DEFAULT_STROKE_COLOR = 0xFF000000;
 
@@ -266,7 +266,7 @@ public class InkView extends View {
     }
 
     /**
-     * Sets a ink listener on the view
+     * Adds a listener on the view
      *
      * @param listener The listener
      */
@@ -277,7 +277,7 @@ public class InkView extends View {
     }
 
     /**
-     * Sets a ink listener on the view
+     * Adds a listener on the view
      *
      * @param listener The listener
      * @deprecated Use {@link #addListener(InkListener listener)} instead
@@ -288,7 +288,7 @@ public class InkView extends View {
     }
 
     /**
-     * Removes the registered listener from the view
+     * Removes the listener from the view
      *
      * @param listener The listener
      */
@@ -297,7 +297,7 @@ public class InkView extends View {
     }
 
     /**
-     * Removes the registered listener from the view
+     * Removes the listener from the view
      *
      * @param listener The listener
      * @deprecated Use {@link #removeListener(InkListener listener)} instead
@@ -308,7 +308,7 @@ public class InkView extends View {
     }
 
     /**
-     * Sets the ink color
+     * Sets the stroke color
      *
      * @param color The color value
      */
@@ -531,7 +531,7 @@ public class InkView extends View {
         // adjust low-pass ratio from changing acceleration
         // using comfortable range of 0.2 -> 0.3 approx.
         float acceleration = Math.abs((p2.velocity - p1.velocity) / (p2.time - p1.time)); // in/s^2
-        float filterRatio = Math.min(FILTER_RATIO_MIN + FILTER_RATIO_ACCEL_MOD * acceleration / THRESHOLD_ACCELERATION, 1f);
+        float filterRatio = Math.min(FILTER_RATIO_MIN + FILTER_RATIO_ACCELERATION_MODIFIER * acceleration / THRESHOLD_ACCELERATION, 1f);
 
         // compute new stroke width
         float desiredWidth = computeStrokeWidth(p2.velocity);

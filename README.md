@@ -45,7 +45,7 @@ or by setting the flags manually in code:
     InkView ink = (InkView) findViewById(R.id.ink);
     ink.setFlags(InkView.FLAG_INTERPOLATION | InkView.FLAG_RESPONSIVE_WEIGHT);
 
-By default, interpolation and responsive weight flags are On.
+By default, interpolation and responsive weight flags are on.
 
 You can capture the drawing in the form of a bitmap by calling:
 
