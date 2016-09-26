@@ -460,8 +460,7 @@ public class InkView extends View {
 
             // compute starting stroke width
             paint.setStrokeWidth(computeStrokeWidth(p.velocity));
-        }
-        if (queueSize == 2) {
+        } else if (queueSize == 2) {
             InkPoint p0 = pointQueue.get(0);
 
             // compute velocity for new point
