@@ -14,9 +14,9 @@ import android.view.View;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("unused")
+public class InkView extends View {
 
-public class InkView extends View
-{
     /**
      * The default maximum stroke width (dp).
      * Will be used as the standard stroke width if FLAG_RESPONSIVE_WIDTH is removed
@@ -47,56 +47,55 @@ public class InkView extends View
 
     /**
      * When present, the data points for the path are drawn with their respective control points
+     *
+     * @deprecated This flag is no longer supported
      */
     @Deprecated
-    public static final int FLAG_DEBUG = 1 << 2;
+    public static final int FLAG_DEBUG = Integer.MIN_VALUE;
 
 
     // constants
-    private static final float THRESHOLD_VELOCITY = 7f;         // in/s
-    private static final float THRESHOLD_ACCELERATION = 3f;    // in/s^2
-    private static final float FILTER_RATIO_MIN = 0.22f;
-    private static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
-    private static final int DEFAULT_FLAGS = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
+    static final float THRESHOLD_VELOCITY = 7f;         // in/s
+    static final float THRESHOLD_ACCELERATION = 3f;    // in/s^2
+    static final float FILTER_RATIO_MIN = 0.22f;
+    static final float FILTER_RATIO_ACCEL_MOD = 0.1f;
+    static final int DEFAULT_FLAGS = FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH;
+    static final int DEFAULT_STROKE_COLOR = 0xFF000000;
 
     // settings
-    private int mFlags;
-    private float mMaxStrokeWidth;
-    private float mMinStrokeWidth;
-    private float mSmoothingRatio;
+    int flags;
+    float maxStrokeWidth;
+    float minStrokeWidth;
+    float smoothingRatio;
 
     // points
-    private ArrayList<InkPoint> mPointQueue = new ArrayList<InkPoint>();
-    private ArrayList<InkPoint> mPointRecycle = new ArrayList<InkPoint>();
+    ArrayList<InkPoint> pointQueue = new ArrayList<>();
+    ArrayList<InkPoint> pointRecycle = new ArrayList<>();
 
     // misc
-    private float mDensity;
-    private Bitmap mBitmap;
-    private Canvas mCanvas;
-    private Paint mPaint;
-    private RectF mDirty;
-    private ArrayList<InkListener> mListeners = new ArrayList<InkListener>();
+    float density;
+    Bitmap bitmap;
+    Canvas canvas;
+    Paint paint;
+    RectF dirty;
+    ArrayList<InkListener> listeners = new ArrayList<>();
 
 
-    public InkView(Context context)
-    {
+    public InkView(Context context) {
         this(context, DEFAULT_FLAGS);
     }
 
-    public InkView(Context context, int flags)
-    {
+    public InkView(Context context, int flags) {
         super(context);
 
         init(flags);
     }
 
-    public InkView(Context context, AttributeSet attrs)
-    {
+    public InkView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public InkView(Context context, AttributeSet attrs, int defStyleAttr)
-    {
+    public InkView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
         // get flags from attributes
@@ -107,28 +106,27 @@ public class InkView extends View
         init(flags);
     }
 
-    private void init(int flags)
-    {
+    private void init(int flags) {
         // init flags
         setFlags(flags);
 
         // init screen density
-        DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
-        mDensity = (metrics.xdpi + metrics.ydpi) / 2f;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        density = (metrics.xdpi + metrics.ydpi) / 2f;
 
         // init paint
-        mPaint = new Paint();
-        mPaint.setStrokeCap(Paint.Cap.ROUND);
-        mPaint.setAntiAlias(true);
+        paint = new Paint();
+        paint.setStrokeCap(Paint.Cap.ROUND);
+        paint.setAntiAlias(true);
 
         // apply default settings
-        setColor(getResources().getColor(android.R.color.black));
+        setColor(DEFAULT_STROKE_COLOR);
         setMaxStrokeWidth(DEFAULT_MAX_STROKE_WIDTH);
         setMinStrokeWidth(DEFAULT_MIN_STROKE_WIDTH);
         setSmoothingRatio(DEFAULT_SMOOTHING_RATIO);
 
         // init dirty rect
-        mDirty = new RectF();
+        dirty = new RectF();
     }
 
 
@@ -137,16 +135,14 @@ public class InkView extends View
     //--------------------------------------
 
     @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh)
-    {
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
         clear();
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent e)
-    {
+    public boolean onTouchEvent(MotionEvent e) {
         int action = e.getAction();
 
         // on down, initialize stroke point
@@ -154,14 +150,14 @@ public class InkView extends View
             addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
 
             // notify listeners of sign
-            for (InkListener listener : mListeners) {
+            for (InkListener listener : listeners) {
                 listener.onInkDraw();
             }
         }
 
         // on move, add next point
         else if (action == MotionEvent.ACTION_MOVE) {
-            if (!mPointQueue.get(mPointQueue.size() - 1).equals(e.getX(), e.getY())) {
+            if (!pointQueue.get(pointQueue.size() - 1).equals(e.getX(), e.getY())) {
                 addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
             }
         }
@@ -169,27 +165,25 @@ public class InkView extends View
         // on up, draw remaining queue
         if (action == MotionEvent.ACTION_UP) {
             // draw final points
-            if (mPointQueue.size() == 1) {
-                draw(mPointQueue.get(0));
-            }
-            else if (mPointQueue.size() == 2) {
-                mPointQueue.get(1).findControlPoints(mPointQueue.get(0), null);
-                draw(mPointQueue.get(0), mPointQueue.get(1));
+            if (pointQueue.size() == 1) {
+                draw(pointQueue.get(0));
+            } else if (pointQueue.size() == 2) {
+                pointQueue.get(1).findControlPoints(pointQueue.get(0), null);
+                draw(pointQueue.get(0), pointQueue.get(1));
             }
 
             // recycle remaining points
-            mPointRecycle.addAll(mPointQueue);
-            mPointQueue.clear();
+            pointRecycle.addAll(pointQueue);
+            pointQueue.clear();
         }
 
         return true;
     }
 
     @Override
-    protected void onDraw(Canvas canvas)
-    {
+    protected void onDraw(Canvas canvas) {
         // simply paint the bitmap on the canvas
-        canvas.drawBitmap(mBitmap, 0, 0, null);
+        canvas.drawBitmap(bitmap, 0, 0, null);
 
         super.onDraw(canvas);
     }
@@ -201,159 +195,179 @@ public class InkView extends View
 
     /**
      * Sets the feature flags for the view. This will overwrite any previously set flag
+     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      */
-    public void setFlags(int flags)
-    {
-        mFlags = flags;
+    public void setFlags(int flags) {
+        this.flags = flags;
     }
 
     /**
      * Adds the feature flag(s) to the view.
+     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      */
-    public void addFlags(int flags)
-    {
-        mFlags |= flags;
+    public void addFlags(int flags) {
+        this.flags |= flags;
     }
 
     /**
      * Alias for {@link #addFlags(int) addFlags}
+     *
      * @param flag A feature flag (ie. FLAG_INTERPOLATION)
      */
-    public void addFlag(int flag)
-    {
+    public void addFlag(int flag) {
         addFlags(flag);
     }
 
     /**
      * Removes the feature flag(s) from the view.
+     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      */
-    public void removeFlags(int flags)
-    {
-        mFlags &= ~flags;
+    public void removeFlags(int flags) {
+        this.flags &= ~flags;
     }
 
     /**
      * Alias for {@link #removeFlags(int) removeFlags}
+     *
      * @param flag A feature flag (ie. FLAG_INTERPOLATION)
      */
-    public void removeFlag(int flag)
-    {
+    public void removeFlag(int flag) {
         removeFlags(flag);
     }
 
     /**
      * Checks to see if the view has the supplied flag(s)
+     *
      * @param flags A bit mask of one or more flags (ie. FLAG_INTERPOLATION | FLAG_RESPONSIVE_WIDTH)
      * @return True or False
      */
-    public boolean hasFlags(int flags)
-    {
-        return (mFlags & flags) > 0;
+    public boolean hasFlags(int flags) {
+        return (this.flags & flags) > 0;
     }
 
     /**
      * Alias for {@link #hasFlags(int flags) hasFlags}
+     *
      * @param flag A feature flag (ie. FLAG_INTERPOLATION)
      * @return True or False
      */
-    public boolean hasFlag(int flag)
-    {
+    public boolean hasFlag(int flag) {
         return hasFlags(flag);
     }
 
     /**
      * Clears all feature flags from the view
      */
-    public void clearFlags()
-    {
-        mFlags = 0;
+    public void clearFlags() {
+        flags = 0;
     }
 
     /**
      * Sets a ink listener on the view
+     *
      * @param listener The listener
      */
-    public void addInkListener(InkListener listener)
-    {
-        if (!mListeners.contains(listener)) {
-            mListeners.add(listener);
+    public void addListener(InkListener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
         }
     }
 
     /**
-     * Removes the registered ink listener from the view
+     * Sets a ink listener on the view
+     *
+     * @param listener The listener
+     * @deprecated Use {@link #addListener(InkListener listener)} instead
+     */
+    @Deprecated
+    public void addInkListener(InkListener listener) {
+        addListener(listener);
+    }
+
+    /**
+     * Removes the registered listener from the view
+     *
      * @param listener The listener
      */
-    public void removeInkListener(InkListener listener)
-    {
-        mListeners.remove(listener);
+    public void removeListener(InkListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Removes the registered listener from the view
+     *
+     * @param listener The listener
+     * @deprecated Use {@link #removeListener(InkListener listener)} instead
+     */
+    @Deprecated
+    public void removeInkListener(InkListener listener) {
+        removeListener(listener);
     }
 
     /**
      * Sets the ink color
+     *
      * @param color The color value
      */
-    public void setColor(int color)
-    {
-        mPaint.setColor(color);
+    public void setColor(int color) {
+        paint.setColor(color);
     }
 
     /**
      * Sets the maximum stroke width
+     *
      * @param width The width (in dp)
      */
-    public void setMaxStrokeWidth(float width)
-    {
-        mMaxStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
+    public void setMaxStrokeWidth(float width) {
+        maxStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
     }
 
     /**
      * Sets the minimum stroke width
+     *
      * @param width The width (in dp)
      */
-    public void setMinStrokeWidth(float width)
-    {
-        mMinStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
+    public void setMinStrokeWidth(float width) {
+        minStrokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
     }
 
     /**
      * Returns the smoothing ratio
+     *
      * @return The smoothing ratio
      */
-    public float getSmoothingRatio()
-    {
-        return mSmoothingRatio;
+    public float getSmoothingRatio() {
+        return smoothingRatio;
     }
 
     /**
      * Sets the smoothing ratio for calculating control points.
      * This value is ignored when the FLAG_INTERPOLATING is removed
+     *
      * @param ratio The smoothing ratio, between 0 and 1
      */
-    public void setSmoothingRatio(float ratio)
-    {
-        mSmoothingRatio = Math.max(Math.min(ratio, 1f), 0f);
+    public void setSmoothingRatio(float ratio) {
+        smoothingRatio = Math.max(Math.min(ratio, 1f), 0f);
     }
 
     /**
      * Clears the view
      */
-    public void clear()
-    {
+    public void clear() {
         // clean up existing bitmap
-        if (mBitmap != null) {
-            mBitmap.recycle();
+        if (bitmap != null) {
+            bitmap.recycle();
         }
 
         // init bitmap cache
-        mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        mCanvas = new Canvas(mBitmap);
+        bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(bitmap);
 
         // notify listeners
-        for (InkListener listener : mListeners) {
+        for (InkListener listener : listeners) {
             listener.onInkClear();
         }
 
@@ -362,20 +376,20 @@ public class InkView extends View
 
     /**
      * Returns the bitmap of the drawing with a transparent background
+     *
      * @return The bitmap
      */
-    public Bitmap getBitmap()
-    {
+    public Bitmap getBitmap() {
         return getBitmap(0);
     }
 
     /**
      * Returns the bitmap of the drawing with the specified background color
+     *
      * @param backgroundColor The background color for the bitmap
      * @return The bitmap
      */
-    public Bitmap getBitmap(int backgroundColor)
-    {
+    public Bitmap getBitmap(int backgroundColor) {
         // create new bitmap
         Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         Canvas bitmapCanvas = new Canvas(bitmap);
@@ -386,23 +400,44 @@ public class InkView extends View
         }
 
         // draw bitmap
-        bitmapCanvas.drawBitmap(mBitmap, 0, 0, null);
+        bitmapCanvas.drawBitmap(this.bitmap, 0, 0, null);
 
         return bitmap;
     }
 
     /**
      * Draws a bitmap to the view, with its top left corner at (x,y)
+     *
      * @param bitmap The bitmap to draw
      * @param x      The destination x coordinate of the bitmap in relation to the view
      * @param y      The destination y coordinate of the bitmap in relation to the view
      * @param paint  The paint used to draw the bitmap (may be null)
      */
-    public void drawBitmap(Bitmap bitmap, float x, float y, Paint paint)
-    {
-        mCanvas.drawBitmap(bitmap, x, y, paint);
+    public void drawBitmap(Bitmap bitmap, float x, float y, Paint paint) {
+        canvas.drawBitmap(bitmap, x, y, paint);
 
         invalidate();
+    }
+
+
+    //--------------------------------------
+    // Listener Interfaces
+    //--------------------------------------
+
+    /**
+     * Listener for the ink view to notify on actions
+     */
+    public interface InkListener {
+        /**
+         * Callback method when the ink view has been cleared
+         */
+        void onInkClear();
+
+        /**
+         * Callback method when the ink view receives a touch event
+         * (Will be fired multiple times during a signing)
+         */
+        void onInkDraw();
     }
 
 
@@ -410,26 +445,24 @@ public class InkView extends View
     // Util
     //--------------------------------------
 
-    float getDensity()
-    {
-        return mDensity;
+    float getDensity() {
+        return density;
     }
 
-    void addPoint(InkPoint p)
-    {
-        mPointQueue.add(p);
+    void addPoint(InkPoint p) {
+        pointQueue.add(p);
 
-        int queueSize = mPointQueue.size();
+        int queueSize = pointQueue.size();
         if (queueSize == 1) {
             // compute starting velocity
-            int recycleSize = mPointRecycle.size();
-            p.velocity = (recycleSize > 0) ? mPointRecycle.get(recycleSize - 1).velocityTo(p) / 2f : 0f;
+            int recycleSize = pointRecycle.size();
+            p.velocity = (recycleSize > 0) ? pointRecycle.get(recycleSize - 1).velocityTo(p) / 2f : 0f;
 
             // compute starting stroke width
-            mPaint.setStrokeWidth(computeStrokeWidth(p.velocity));
+            paint.setStrokeWidth(computeStrokeWidth(p.velocity));
         }
         if (queueSize == 2) {
-            InkPoint p0 = mPointQueue.get(0);
+            InkPoint p0 = pointQueue.get(0);
 
             // compute velocity for new point
             p.velocity = p0.velocityTo(p);
@@ -441,11 +474,10 @@ public class InkView extends View
             p0.findControlPoints(null, p);
 
             // update starting stroke width
-            mPaint.setStrokeWidth(computeStrokeWidth(p0.velocity));
-        }
-        else if (queueSize == 3) {
-            InkPoint p0 = mPointQueue.get(0);
-            InkPoint p1 = mPointQueue.get(1);
+            paint.setStrokeWidth(computeStrokeWidth(p0.velocity));
+        } else if (queueSize == 3) {
+            InkPoint p0 = pointQueue.get(0);
+            InkPoint p1 = pointQueue.get(1);
 
             // find control points for second point
             p1.findControlPoints(p0, p);
@@ -457,48 +489,44 @@ public class InkView extends View
             draw(p0, p1);
 
             // recycle 1st point
-            mPointRecycle.add(mPointQueue.remove(0));
+            pointRecycle.add(pointQueue.remove(0));
         }
     }
 
-    InkPoint getRecycledPoint(float x, float y, long time)
-    {
-        if (mPointRecycle.size() == 0) {
+    InkPoint getRecycledPoint(float x, float y, long time) {
+        if (pointRecycle.size() == 0) {
             return new InkPoint(x, y, time);
         }
 
-        return mPointRecycle.remove(0).reset(x, y, time);
+        return pointRecycle.remove(0).reset(x, y, time);
     }
 
-    float computeStrokeWidth(float velocity)
-    {
+    float computeStrokeWidth(float velocity) {
         // compute responsive width
         if (hasFlags(FLAG_RESPONSIVE_WIDTH)) {
-            return mMaxStrokeWidth - (mMaxStrokeWidth - mMinStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
+            return maxStrokeWidth - (maxStrokeWidth - minStrokeWidth) * Math.min(velocity / THRESHOLD_VELOCITY, 1f);
         }
 
-        return mMaxStrokeWidth;
+        return maxStrokeWidth;
     }
 
-    void draw(InkPoint p)
-    {
-        mPaint.setStyle(Paint.Style.FILL);
+    void draw(InkPoint p) {
+        paint.setStyle(Paint.Style.FILL);
 
         // draw dot
-        mCanvas.drawCircle(p.x, p.y, mPaint.getStrokeWidth() / 2f, mPaint);
+        canvas.drawCircle(p.x, p.y, paint.getStrokeWidth() / 2f, paint);
 
         invalidate();
     }
 
-    void draw(InkPoint p1, InkPoint p2)
-    {
+    void draw(InkPoint p1, InkPoint p2) {
         // init dirty rect
-        mDirty.left = Math.min(p1.x, p2.x);
-        mDirty.right = Math.max(p1.x, p2.x);
-        mDirty.top = Math.min(p1.y, p2.y);
-        mDirty.bottom = Math.max(p1.y, p2.y);
+        dirty.left = Math.min(p1.x, p2.x);
+        dirty.right = Math.max(p1.x, p2.x);
+        dirty.top = Math.min(p1.y, p2.y);
+        dirty.bottom = Math.max(p1.y, p2.y);
 
-        mPaint.setStyle(Paint.Style.STROKE);
+        paint.setStyle(Paint.Style.STROKE);
 
         // adjust low-pass ratio from changing acceleration
         // using comfortable range of 0.2 -> 0.3 approx.
@@ -507,7 +535,7 @@ public class InkView extends View
 
         // compute new stroke width
         float desiredWidth = computeStrokeWidth(p2.velocity);
-        float startWidth = mPaint.getStrokeWidth();
+        float startWidth = paint.getStrokeWidth();
 
         float endWidth = filterRatio * desiredWidth + (1f - filterRatio) * startWidth;
         float deltaWidth = endWidth - startWidth;
@@ -550,8 +578,8 @@ public class InkView extends View
                 x2 = x1 + dx;
                 y2 = y1 + dy;
 
-                mPaint.setStrokeWidth(startWidth + deltaWidth * i / steps);
-                mCanvas.drawLine(x1, y1, x2, y2, mPaint);
+                paint.setStrokeWidth(startWidth + deltaWidth * i / steps);
+                canvas.drawLine(x1, y1, x2, y2, paint);
 
                 x1 = x2;
                 y1 = y2;
@@ -561,44 +589,22 @@ public class InkView extends View
                 ddy += dddy;
 
                 // adjust dirty bounds to account for curve
-                mDirty.left = Math.min(mDirty.left, x1);
-                mDirty.right = Math.max(mDirty.right, x1);
-                mDirty.top = Math.min(mDirty.top, y1);
-                mDirty.bottom = Math.max(mDirty.bottom, y1);
+                dirty.left = Math.min(dirty.left, x1);
+                dirty.right = Math.max(dirty.right, x1);
+                dirty.top = Math.min(dirty.top, y1);
+                dirty.bottom = Math.max(dirty.bottom, y1);
             }
 
-            mPaint.setStrokeWidth(endWidth);
-            mCanvas.drawLine(x1, y1, p2.x, p2.y, mPaint);
+            paint.setStrokeWidth(endWidth);
+            canvas.drawLine(x1, y1, p2.x, p2.y, paint);
         }
         // no interpolation, draw line between points
         else {
-            mCanvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
-            mPaint.setStrokeWidth(endWidth);
+            canvas.drawLine(p1.x, p1.y, p2.x, p2.y, paint);
+            paint.setStrokeWidth(endWidth);
         }
 
-        invalidate((int) (mDirty.left - mMaxStrokeWidth / 2), (int) (mDirty.top - mMaxStrokeWidth / 2), (int) (mDirty.right + mMaxStrokeWidth / 2), (int) (mDirty.bottom + mMaxStrokeWidth / 2));
-    }
-
-
-    //--------------------------------------
-    // Listener Interfaces
-    //--------------------------------------
-
-    /**
-     * Listener for the ink view to notify on actions
-     */
-    public interface InkListener
-    {
-        /**
-         * Callback method when the ink view has been cleared
-         */
-        public void onInkClear();
-
-        /**
-         * Callback method when the ink view receives a touch event
-         * (Will be fired multiple times during a signing)
-         */
-        public void onInkDraw();
+        invalidate((int) (dirty.left - maxStrokeWidth / 2), (int) (dirty.top - maxStrokeWidth / 2), (int) (dirty.right + maxStrokeWidth / 2), (int) (dirty.bottom + maxStrokeWidth / 2));
     }
 
 
@@ -606,22 +612,17 @@ public class InkView extends View
     // Util Classes
     //--------------------------------------
 
-    public class InkPoint
-    {
-        public float x, y, c1x, c1y, c2x, c2y, velocity;
-        public long time;
+    class InkPoint {
 
-        public InkPoint()
-        {
-        }
+        float x, y, c1x, c1y, c2x, c2y, velocity;
+        long time;
 
-        public InkPoint(float x, float y, long time)
-        {
+
+        InkPoint(float x, float y, long time) {
             reset(x, y, time);
         }
 
-        public InkPoint reset(float x, float y, long time)
-        {
+        InkPoint reset(float x, float y, long time) {
             this.x = x;
             this.y = y;
             this.time = time;
@@ -635,31 +636,22 @@ public class InkView extends View
             return this;
         }
 
-        public boolean equals(InkPoint p)
-        {
-            return equals(p.x, p.y);
-        }
-
-        public boolean equals(float x, float y)
-        {
+        boolean equals(float x, float y) {
             return this.x == x && this.y == y;
         }
 
-        public float distanceTo(InkPoint p)
-        {
+        float distanceTo(InkPoint p) {
             float dx = p.x - x;
             float dy = p.y - y;
 
             return (float) Math.sqrt(dx * dx + dy * dy);
         }
 
-        public float velocityTo(InkPoint p)
-        {
+        float velocityTo(InkPoint p) {
             return (1000f * distanceTo(p)) / (Math.abs(p.time - time) * getDensity()); // in/s
         }
 
-        public void findControlPoints(InkPoint prev, InkPoint next)
-        {
+        void findControlPoints(InkPoint prev, InkPoint next) {
             if (prev == null && next == null) {
                 return;
             }
