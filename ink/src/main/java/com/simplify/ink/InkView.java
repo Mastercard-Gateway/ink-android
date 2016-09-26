@@ -48,6 +48,7 @@ public class InkView extends View
     /**
      * When present, the data points for the path are drawn with their respective control points
      */
+    @Deprecated
     public static final int FLAG_DEBUG = 1 << 2;
 
 
@@ -75,14 +76,6 @@ public class InkView extends View
     private Paint mPaint;
     private RectF mDirty;
     private ArrayList<InkListener> mListeners = new ArrayList<InkListener>();
-
-    // debug
-    private boolean mHasDebugLayer = false;
-    private Bitmap mDebugBitmap;
-    private Canvas mDebugCanvas;
-    private Paint mDebugPointPaint;
-    private Paint mDebugControlPaint;
-    private Paint mDebugLinePaint;
 
 
     public InkView(Context context)
@@ -127,20 +120,6 @@ public class InkView extends View
         mPaint = new Paint();
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setAntiAlias(true);
-
-        // init debug paint
-        mDebugPointPaint = new Paint();
-        mDebugPointPaint.setAntiAlias(true);
-        mDebugPointPaint.setStyle(Paint.Style.FILL);
-        mDebugPointPaint.setColor(getContext().getResources().getColor(android.R.color.holo_red_dark));
-        mDebugControlPaint = new Paint();
-        mDebugControlPaint.setAntiAlias(true);
-        mDebugControlPaint.setStyle(Paint.Style.FILL);
-        mDebugControlPaint.setColor(getContext().getResources().getColor(android.R.color.holo_blue_dark));
-        mDebugLinePaint = new Paint();
-        mDebugLinePaint.setAntiAlias(true);
-        mDebugLinePaint.setStyle(Paint.Style.STROKE);
-        mDebugLinePaint.setColor(getContext().getResources().getColor(android.R.color.darker_gray));
 
         // apply default settings
         setColor(getResources().getColor(android.R.color.black));
@@ -211,11 +190,6 @@ public class InkView extends View
     {
         // simply paint the bitmap on the canvas
         canvas.drawBitmap(mBitmap, 0, 0, null);
-
-        // draw debug layer if it has some data
-        if (mHasDebugLayer) {
-            canvas.drawBitmap(mDebugBitmap, 0, 0, null);
-        }
 
         super.onDraw(canvas);
     }
@@ -374,19 +348,9 @@ public class InkView extends View
             mBitmap.recycle();
         }
 
-        // cleanup debug bitmap
-        if (mDebugBitmap != null) {
-            mDebugBitmap.recycle();
-        }
-
         // init bitmap cache
         mBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
         mCanvas = new Canvas(mBitmap);
-
-        // init debug bitmap cache
-        mDebugBitmap = Bitmap.createBitmap(getWidth(), getHeight(), Bitmap.Config.ARGB_8888);
-        mDebugCanvas = new Canvas(mDebugBitmap);
-        mHasDebugLayer = false;
 
         // notify listeners
         for (InkListener listener : mListeners) {
@@ -610,31 +574,6 @@ public class InkView extends View
         else {
             mCanvas.drawLine(p1.x, p1.y, p2.x, p2.y, mPaint);
             mPaint.setStrokeWidth(endWidth);
-        }
-
-        // draw debug layer
-        if (hasFlags(FLAG_DEBUG)) {
-
-            // draw control points if interpolating
-            if (hasFlags(FLAG_INTERPOLATION)) {
-                float controlRadius = mMaxStrokeWidth / 3f;
-
-                mDebugCanvas.drawLine(p1.c1x, p1.c1y, p1.c2x, p1.c2y, mDebugLinePaint);
-                mDebugCanvas.drawLine(p2.c1x, p2.c1y, p2.c2x, p2.c2y, mDebugLinePaint);
-                mDebugCanvas.drawCircle(p1.c1x, p1.c1y, controlRadius, mDebugControlPaint);
-                mDebugCanvas.drawCircle(p1.c2x, p1.c2y, controlRadius, mDebugControlPaint);
-                mDebugCanvas.drawCircle(p2.c1x, p2.c1y, controlRadius, mDebugControlPaint);
-                mDebugCanvas.drawCircle(p2.c2x, p2.c2y, controlRadius, mDebugControlPaint);
-
-                // TODO adjust dirty bounds to account for control points
-            }
-
-            float pointRadius = mMaxStrokeWidth / 1.5f;
-
-            mDebugCanvas.drawCircle(p1.x, p1.y, pointRadius, mDebugPointPaint);
-            mDebugCanvas.drawCircle(p2.x, p2.y, pointRadius, mDebugPointPaint);
-
-            mHasDebugLayer = true;
         }
 
         invalidate((int) (mDirty.left - mMaxStrokeWidth / 2), (int) (mDirty.top - mMaxStrokeWidth / 2), (int) (mDirty.right + mMaxStrokeWidth / 2), (int) (mDirty.bottom + mMaxStrokeWidth / 2));
