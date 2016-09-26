@@ -8,13 +8,12 @@ import android.view.MenuItem;
 
 import com.simplify.ink.InkView;
 
-public class MainActivity extends Activity
-{
+public class MainActivity extends Activity {
+
     InkView mInkView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -22,19 +21,16 @@ public class MainActivity extends Activity
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
+    public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options, menu);
         menu.findItem(R.id.menu_interpolation).setChecked(mInkView.hasFlag(InkView.FLAG_INTERPOLATION));
         menu.findItem(R.id.menu_responsive).setChecked(mInkView.hasFlag(InkView.FLAG_RESPONSIVE_WIDTH));
-        menu.findItem(R.id.menu_debug).setChecked(mInkView.hasFlag(InkView.FLAG_DEBUG));
 
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_clear:
                 mInkView.clear();
@@ -44,8 +40,7 @@ public class MainActivity extends Activity
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
                     mInkView.addFlag(InkView.FLAG_INTERPOLATION);
-                }
-                else {
+                } else {
                     mInkView.removeFlag(InkView.FLAG_INTERPOLATION);
                 }
                 return true;
@@ -54,19 +49,8 @@ public class MainActivity extends Activity
                 item.setChecked(!item.isChecked());
                 if (item.isChecked()) {
                     mInkView.addFlag(InkView.FLAG_RESPONSIVE_WIDTH);
-                }
-                else {
+                } else {
                     mInkView.removeFlag(InkView.FLAG_RESPONSIVE_WIDTH);
-                }
-                return true;
-
-            case R.id.menu_debug:
-                item.setChecked(!item.isChecked());
-                if (item.isChecked()) {
-                    mInkView.addFlag(InkView.FLAG_DEBUG);
-                }
-                else {
-                    mInkView.removeFlag(InkView.FLAG_DEBUG);
                 }
                 return true;
         }
