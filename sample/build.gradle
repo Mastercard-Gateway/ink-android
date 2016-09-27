@@ -8,7 +8,7 @@ android {
         applicationId "com.simplify.ink.sample"
         minSdkVersion 16
         targetSdkVersion 24
-        versionCode 2
+        versionCode 3
         versionName project.PUBLISH_VERSION
     }
 
