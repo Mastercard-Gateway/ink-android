@@ -10,7 +10,7 @@ A light-weight, customizable view for capturing a signature or drawing in an And
 
 To import the Android SDK, include it as a dependency in your build.gradle file
 
-    compile 'com.simplify:ink:0.2.2'
+    compile 'com.simplify:ink:0.2.3'
 
 
 ## Usage
@@ -54,13 +54,3 @@ You can capture the drawing in the form of a bitmap by calling:
 or you can also include a background color:
 
     Bitmap drawing = ink.getBitmap(getResources().getColor(R.color.my_background_color));
-
-
-Troubleshooting
----------------
-
-If things don't look quite right (not all touch screens are created equal), then there is a debug flag that is helpful in diagnosing problems. The sample app includes a toggle for this flag which draws the data points and their respective control points.
-
-For troubleshooting inquiries, please include device information and a screenshot of the problem with the debug flag on, if relevant.
-
-Enjoy!
