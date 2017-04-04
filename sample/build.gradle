@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+def currentVersionName = properties.versionName
+
 android {
     compileSdkVersion 25
     buildToolsVersion '25.0.2'
@@ -8,8 +10,8 @@ android {
         applicationId "com.simplify.ink.sample"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 3
-        versionName project.PUBLISH_VERSION
+        versionCode 4
+        versionName currentVersionName
     }
 
     buildTypes {
