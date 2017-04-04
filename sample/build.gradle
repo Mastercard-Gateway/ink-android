@@ -1,15 +1,17 @@
 apply plugin: 'com.android.application'
 
+def currentVersionName = properties.versionName
+
 android {
-    compileSdkVersion 24
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "com.simplify.ink.sample"
         minSdkVersion 16
-        targetSdkVersion 24
-        versionCode 3
-        versionName project.PUBLISH_VERSION
+        targetSdkVersion 25
+        versionCode 4
+        versionName currentVersionName
     }
 
     buildTypes {
@@ -23,4 +25,7 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile project(':ink')
+
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
 }

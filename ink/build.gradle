@@ -1,21 +1,92 @@
-apply plugin: 'com.android.library'
-apply plugin: 'maven'
+def artifactVersion = properties.versionName
 
+// env variables defined in CI server
+def artifactoryUser = System.getenv('bamboo_artifactory_publisher_user')
+def artifactoryPassword = System.getenv('bamboo_artifactory_publisher_password')
+
+apply plugin: 'com.android.library'
+apply plugin: 'com.jfrog.artifactory'
+apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 24
+        targetSdkVersion 25
+    }
+
+    lintOptions {
+        abortOnError false
     }
 
     buildTypes {
-        release {
+        release
+    }
+}
 
+publishing {
+    publications {
+        aar(MavenPublication) {
+            groupId = 'com.simplify'
+            artifactId project.name
+            version = artifactVersion
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+
+
+            pom.withXml {
+                def root = asNode()
+
+                // adds basic info
+                root.appendNode('name', 'Ink')
+                root.appendNode('description', 'A light-weight, customizable view for capturing a signature or drawing in an Android app.')
+                root.appendNode('url', 'https://github.com/simplifycom/ink-android')
+
+                // adds license info
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'The MIT License')
+                license.appendNode('url', 'http://opensource.org/licenses/MIT')
+                license.appendNode('distribution', 'repo')
+
+                // adds source control info
+                def scm = root.appendNode('scm')
+                scm.appendNode('url', 'https://github.com/simplifycom/ink-android')
+                scm.appendNode('connection', 'https://github.com/simplifycom/ink-android.git')
+
+                // adds developer info
+                def developers = root.appendNode('developers')
+                def dev = developers.appendNode('developer')
+                dev.appendNode('id', 'nak5ive')
+                dev.appendNode('name', 'Nevada Kent')
+                dev.appendNode('email', 'nak5ive@gmail.com')
+            }
         }
     }
 }
 
-apply from: '../release-aar.gradle'
+artifactory {
+    contextUrl = 'http://tools.labs.mastercard.com/artifactory'
+    publish {
+        repository {
+            // The Artifactory repository key to publish to
+            repoKey = artifactVersion.endsWith('SNAPSHOT') ? 'libs-snapshot-local' : 'libs-release-local'
+            username = artifactoryUser // The publisher user name
+            password = artifactoryPassword // The publisher password
+            maven = true
+        }
+        defaults {
+            publishArtifacts = true
+            publications('aar')
+            publishPom = true //Publish generated POM files to Artifactory (true by default)
+            publishIvy = false //Publish generated Ivy descriptor files to Artifactory (true by default)
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'repo'
+            username = artifactoryUser // The resolver user name
+            password = artifactoryPassword // The resolver password
+        }
+    }
+}
