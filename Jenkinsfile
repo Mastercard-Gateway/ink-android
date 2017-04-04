@@ -16,7 +16,6 @@ node {
     sh "./gradlew ink:generatePomFileForAarPublication ink:artifactoryPublish"
 
     stage 'Archive'
-    step([$class: 'JUnitResultArchiver', testResults: 'ink/build/test-results/**/TEST-*.xml'])
     step([$class: 'ArtifactArchiver', artifacts: 'ink/build/outputs/**/*.aar', fingerprint: true])
     properties([[$class: 'BuildDiscarderProperty', strategy: [$class: 'LogRotator', artifactNumToKeepStr: '10', numToKeepStr: '10']]])
 }
