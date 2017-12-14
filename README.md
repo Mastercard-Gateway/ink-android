@@ -4,7 +4,7 @@ A light-weight, customizable view for capturing a signature or drawing in an And
 
 ![screenshot](./screenshot.png)
 
-## Import the Dependency [![maven-central](https://img.shields.io/maven-central/v/com.simplify/ink.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%20%22com.simplify%22%2C%20a%3A%22ink%22)
+## Import the Dependency [ ![Download](https://api.bintray.com/packages/simplify/Android/simplify-ink-android/images/download.svg) ](https://bintray.com/simplify/Android/simplify-ink-android/_latestVersion)
 
 To import the Android SDK, include it as a dependency in your build.gradle file
 ```groovy
