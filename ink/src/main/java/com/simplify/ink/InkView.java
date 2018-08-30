@@ -96,7 +96,7 @@ public class InkView extends View {
     RectF dirty;
     ArrayList<InkListener> listeners = new ArrayList<>();
 
-    private boolean isEmpty;
+    private boolean mIsEmpty;
 
 
     public InkView(Context context) {
@@ -146,7 +146,7 @@ public class InkView extends View {
         // init dirty rect
         dirty = new RectF();
 
-        isEmpty = true;
+        mIsEmpty = true;
     }
 
 
@@ -204,7 +204,7 @@ public class InkView extends View {
     protected void onDraw(Canvas canvas) {
         // simply paint the bitmap on the canvas
         canvas.drawBitmap(bitmap, 0, 0, null);
-        isEmpty = false;
+        mIsEmpty = false;
         super.onDraw(canvas);
     }
 
@@ -379,7 +379,7 @@ public class InkView extends View {
      * @return if the view is empty
      */
     public boolean isViewEmpty() {
-        return isEmpty;
+        return mIsEmpty;
     }
 
     /**
@@ -401,7 +401,7 @@ public class InkView extends View {
         }
 
         invalidate();
-        isEmpty = true;
+        mIsEmpty = true;
     }
 
     /**
