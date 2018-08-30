@@ -164,7 +164,7 @@ public class InkView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         int action = e.getAction();
-        isEmpty = false;
+        mIsEmpty = false;
         // on down, initialize stroke point
         if (action == MotionEvent.ACTION_DOWN) {
             addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
