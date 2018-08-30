@@ -81,10 +81,7 @@ public class MainActivity extends Activity {
         item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Log.i("MCH", "ISEMPTY: " + inkView.isViewEmpty());
-                Log.i("MCH", "CLEAR");
                 inkView.clear();
-                Log.i("MCH", "ISEMPTY: " + inkView.isViewEmpty());
                 return true;
             }
         });
