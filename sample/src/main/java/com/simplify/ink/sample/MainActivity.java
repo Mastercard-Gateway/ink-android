@@ -20,6 +20,7 @@ package com.simplify.ink.sample;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -80,7 +81,10 @@ public class MainActivity extends Activity {
         item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                Log.i("MCH", "ISEMPTY: " + inkView.isViewEmpty());
+                Log.i("MCH", "CLEAR");
                 inkView.clear();
+                Log.i("MCH", "ISEMPTY: " + inkView.isViewEmpty());
                 return true;
             }
         });
