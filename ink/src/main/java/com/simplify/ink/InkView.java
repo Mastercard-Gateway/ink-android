@@ -164,7 +164,7 @@ public class InkView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         int action = e.getAction();
-
+        isEmpty = false;
         // on down, initialize stroke point
         if (action == MotionEvent.ACTION_DOWN) {
             addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
@@ -204,7 +204,7 @@ public class InkView extends View {
     protected void onDraw(Canvas canvas) {
         // simply paint the bitmap on the canvas
         canvas.drawBitmap(bitmap, 0, 0, null);
-        mIsEmpty = false;
+
         super.onDraw(canvas);
     }
 
