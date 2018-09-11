@@ -96,6 +96,7 @@ public class InkView extends View {
     RectF dirty;
     ArrayList<InkListener> listeners = new ArrayList<>();
 
+    private boolean isEmpty;
 
     public InkView(Context context) {
         this(context, DEFAULT_FLAGS);
@@ -143,6 +144,8 @@ public class InkView extends View {
 
         // init dirty rect
         dirty = new RectF();
+
+        isEmpty = true;
     }
 
 
@@ -160,7 +163,7 @@ public class InkView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         int action = e.getAction();
-
+        isEmpty = false;
         // on down, initialize stroke point
         if (action == MotionEvent.ACTION_DOWN) {
             addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
@@ -370,6 +373,15 @@ public class InkView extends View {
     }
 
     /**
+     * Checks if the view is empty
+     *
+     * @return True of False
+     */
+    public boolean isViewEmpty() {
+        return isEmpty;
+    }
+
+    /**
      * Clears the view
      */
     public void clear() {
@@ -388,6 +400,7 @@ public class InkView extends View {
         }
 
         invalidate();
+        isEmpty = true;
     }
 
     /**
