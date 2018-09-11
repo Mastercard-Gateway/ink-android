@@ -372,9 +372,9 @@ public class InkView extends View {
     }
 
     /**
-     * Returns if the view is empty
+     * Checks if the view is empty
      *
-     * @return if the view is empty
+     * @return True of False
      */
     public boolean isViewEmpty() {
         return isEmpty;
