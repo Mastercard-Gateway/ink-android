@@ -24,7 +24,6 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
@@ -97,7 +96,8 @@ public class InkView extends View {
     RectF dirty;
     ArrayList<InkListener> listeners = new ArrayList<>();
 
-    private boolean isEmpty = true;
+    private boolean mIsEmpty;
+
 
     public InkView(Context context) {
         this(context, DEFAULT_FLAGS);
@@ -145,6 +145,8 @@ public class InkView extends View {
 
         // init dirty rect
         dirty = new RectF();
+
+        mIsEmpty = true;
     }
 
 
@@ -162,7 +164,7 @@ public class InkView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         int action = e.getAction();
-        isEmpty = false;
+        mIsEmpty = false;
         // on down, initialize stroke point
         if (action == MotionEvent.ACTION_DOWN) {
             addPoint(getRecycledPoint(e.getX(), e.getY(), e.getEventTime()));
@@ -377,7 +379,7 @@ public class InkView extends View {
      * @return True of False
      */
     public boolean isViewEmpty() {
-        return isEmpty;
+        return mIsEmpty;
     }
 
     /**
@@ -399,7 +401,7 @@ public class InkView extends View {
         }
 
         invalidate();
-        isEmpty = true;
+        mIsEmpty = true;
     }
 
     /**
