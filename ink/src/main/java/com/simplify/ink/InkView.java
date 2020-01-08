@@ -29,6 +29,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class InkView extends View {
@@ -85,8 +86,8 @@ public class InkView extends View {
     float smoothingRatio;
 
     // points
-    ArrayList<InkPoint> pointQueue = new ArrayList<>();
-    ArrayList<InkPoint> pointRecycle = new ArrayList<>();
+    List<InkPoint> pointQueue = new ArrayList<>();
+    List<InkPoint> pointRecycle = new ArrayList<>();
 
     // misc
     float density;
@@ -635,6 +636,9 @@ public class InkView extends View {
         invalidate((int) (dirty.left - maxStrokeWidth / 2), (int) (dirty.top - maxStrokeWidth / 2), (int) (dirty.right + maxStrokeWidth / 2), (int) (dirty.bottom + maxStrokeWidth / 2));
     }
 
+    public List<InkPoint> getPoints() {
+        return this.pointQueue;
+    }
 
     //--------------------------------------
     // Util Classes
