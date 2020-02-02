@@ -636,6 +636,11 @@ public class InkView extends View {
         invalidate((int) (dirty.left - maxStrokeWidth / 2), (int) (dirty.top - maxStrokeWidth / 2), (int) (dirty.right + maxStrokeWidth / 2), (int) (dirty.bottom + maxStrokeWidth / 2));
     }
 
+    /**
+     * Returns the points of the drawing with the specified background color
+     *
+     * @return The points list
+     */
     public List<InkPoint> getPoints() {
         return this.pointQueue;
     }
