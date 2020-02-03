@@ -118,8 +118,7 @@ public class InkView extends View {
 
         // get flags from attributes
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.InkView, defStyleAttr, 0);
-        //int flags = a.getInt(R.styleable.InkView_inkFlags, DEFAULT_FLAGS);
-        int flags = DEFAULT_FLAGS;
+        int flags = a.getInt(R.styleable.InkView_inkFlags, DEFAULT_FLAGS);
         a.recycle();
 
         init(flags);
